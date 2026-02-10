@@ -38,12 +38,13 @@ def gj_dens(p : float,M : float,D : float,x : float):
     rho_x : float
         gas number density at distance x away from the nozzle exit (cm^-3)
     """
-    y = 5/3      # adiabatic constant for monoatomic gas
+    y = 5/3     # adiabatic constant for monoatomic gas
     rho_c = gj_n(p)   # Number dens inside cylinder
     rho_ex = rho_c/(1+((y-1)/2)*(M**2))**(1/(y-1)) # Number density at nozzle exit
     R = D + 2*(x/M)   # fwhm of gas at distance x away from nozzle 
     rho_x = rho_ex*((D/R)**2)
     return rho_x
+
 
 # y = 2
 # M = 2
@@ -68,14 +69,22 @@ def gj_dens(p : float,M : float,D : float,x : float):
 # plt.show()
 
 ## Plot for comparing density from 2019 and 2026
-fig, ax = plt.subplots()
-x = np.linspace(0,15,100)
-ax.plot(x,1000*2*mp*gj_dens(696,5,10,x),color='MediumSeaGreen',linewidth=2,label='2019')
-ax.plot(x,1000*2*mp*gj_dens(1500,5,10,x),color='orange',linewidth=2,label='2026')
+# fig, ax = plt.subplots(1,2,figsize=(14,5))
+# x = np.linspace(0,15,100)
+# ax[0].plot(x,2*gj_dens(696,5,10,x),color='MediumSeaGreen',linewidth=2,label='2019')
+# ax[0].plot(x,2*gj_dens(1500,5,10,x),color='orange',linewidth=2,label='2026')
 
-ax.set_xlim([0,max(x)])
-ax.set_ylabel(r"$\rho (g/cm^3)$")
-ax.set_xlabel("Distance from nozzle exit (mm)")
+# ax[0].set_xlim([0,max(x)])
+# ax[0].set_ylabel(r"$\rho (cm^{-3})$")
+# ax[0].set_xlabel("Distance from nozzle exit (mm)")
 
-plt.legend()
-plt.show()
+# ax[1].plot(x,1000*2*mp*gj_dens(696,5,10,x),color='MediumSeaGreen',linewidth=2,label='2019')
+# ax[1].plot(x,1000*2*mp*gj_dens(1500,5,10,x),color='orange',linewidth=2,label='2026')
+
+# ax[1].set_xlim([0,max(x)])
+# ax[1].set_ylabel(r"$\rho (g/cm^3)$")
+# ax[1].set_xlabel("Distance from nozzle exit (mm)")
+# fig.suptitle("Comparison of H2 gas density for 2019 and 2026 gas jets")
+
+# plt.legend()
+# plt.show()

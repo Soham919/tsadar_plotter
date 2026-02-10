@@ -243,7 +243,7 @@ def f_rho(f1, Z1, Z2, ne):
 
 def RH(M,rho1,u1,T1):
     """
-    Calculates the Rankine-Hugoniot jump factor for density in a strong shock
+    Calculates the Rankine-Hugoniot jump factors in a strong shock
     Parameters
     ----------
     M : float
@@ -288,6 +288,30 @@ def blast_wave_r_v(E,rho1,t):
     r_t = eps*((E*(t**2))/rho1)**(1/5)
     v_t = (2/5)*eps*(E/(rho1*(t**3)))**(1/5)
     return [r_t,v_t]
+
+def power_calc(n,E,t,A):
+    """
+    Calculates the total power from laser beams on a certain surface area
+    Parameters
+    ----------
+    n : float
+        No. of beams
+    E : float
+        Energy in each beam (J)
+    t : float
+        Pulse duration (ps)
+    A : float
+        Area over which the beams are focused (cm^2)
+    Returns
+    -------
+    P : float
+        The power in TW/cm2
+    """
+    t = t*1e-12 # ps to s
+    A = A*1e-4 # cm2 to m2
+    P = (n*E)/ (t*A) # W/m2
+    P = P*1e-16 # TW/cm2
+    return P
 
 #plt.plot(x,RH_T(x))
 #plt.show()
@@ -342,24 +366,32 @@ def blast_wave_r_v(E,rho1,t):
 # plt.show()
 
 # Sedov blast wave expansion
-t = np.linspace(1e-11,1e-8,100)
-E = 2500 # energy of the laser was 2.5 KJ
-E2 = 2000
-E3 = 1000
-rho1 = 2e19*mp*(10**6)
-[r,v] = blast_wave_r_v(E,rho1,t)
-fig, ax = plt.subplots(2,1)
-ax[0].plot(t*1e9,r/1000,label=r"$r ~ (\frac{Et^{2}}{\rho_{1}})^{1/5}$")
+# t = np.linspace(1e-11,1e-8,100)
+# E = 2500 # energy of the laser was 2.5 KJ
+# E2 = 2000
+# E3 = 1000
+# rho1 = 2e19*mp*(10**6)
+# [r,v] = blast_wave_r_v(E,rho1,t)
+# fig, ax = plt.subplots(2,1)
+# ax[0].plot(t*1e9,r/1000,label=r"$r ~ (\frac{Et^{2}}{\rho_{1}})^{1/5}$")
 
-ax[0].set_title('Radius')
-ax[0].set_xlabel(r"$t (ns)$")
-ax[0].set_xlabel(r"$r (mm)$")
-plt.legend()
+# ax[0].set_title('Radius')
+# ax[0].set_xlabel(r"$t (ns)$")
+# ax[0].set_xlabel(r"$r (mm)$")
+# plt.legend()
 
-ax[1].plot(v,t*1e9,label=r"$v \sim (\frac{E}{\rho_{1}t^{3}})^{1/5}$")
-ax[1].set_title('velocity')
-ax[1].set_xlabel(r"$t (ns)$")
-ax[1].set_xlabel(r"$v (mm)$")
+# ax[1].plot(v,t*1e9,label=r"$v \sim (\frac{E}{\rho_{1}t^{3}})^{1/5}$")
+# ax[1].set_title('velocity')
+# ax[1].set_xlabel(r"$t (ns)$")
+# ax[1].set_xlabel(r"$v (mm)$")
 
-plt.legend()
-plt.show()
+# plt.legend()
+# plt.show()
+
+A = pi*((0.003)**2)  # area in cm2
+print(power_calc(1,3,0.03,A))
+
+a = cs_ij(0.413431,0.103357,1,4,1,2,50)
+b = cs(1,1,50)
+#print(a)
+#print(b)
