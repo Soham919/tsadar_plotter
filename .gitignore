@@ -1,0 +1,7 @@
+# --- random ignorable files and backup --- #
+.DS_store
+.ipynb_checkpoints/
+.vscode/
+backup/
+__pycache__/
+

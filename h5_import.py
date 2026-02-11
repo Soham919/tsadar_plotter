@@ -18,7 +18,7 @@ def h5_to_dict(node):
             #data_dict[key] = h5_to_dict(item)
             continue
         elif isinstance(item, h5py.Dataset):
-            print(f"Loading dataset: {key} ({item.attrs["unit"]}) with shape {item.shape} and dtype {item.dtype}")
+            print(f"Loading dataset: {key} ({item.attrs['unit']}) with shape {item.shape} and dtype {item.dtype}")
             # If it's a dataset, read it into memory as a NumPy array [:]
             data_dict[key] = item[:]
             

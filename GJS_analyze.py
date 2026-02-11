@@ -7,7 +7,7 @@ from h5_import import h5_to_dict
 
 #---------File path---------- #
 baseDir = Path().resolve().parent
-fp = baseDir/"Kinshock"/"Kinshock-26A"/"GasJet"
+fp = baseDir/"Kinshock-26A"/"GasJet"
 file = "D-GJ-C-232_H2He_1500psi.h5"
 fp = fp/file
 
@@ -28,7 +28,7 @@ q = full_data['total-pressure']  # radial velocity in m/s
 
 # ------ Plot -------- #
 fig, ax = plt.subplots(1,2, figsize=(12,5))
-im = ax[0].pcolormesh(full_data['r']*1000, full_data['z']*1000, q, cmap='viridis', shading='auto')
+im = ax[0].pcolormesh(full_data['r']*1000, full_data['z']*1000, q, cmap='viridis', vmin=1e6, vmax = 1e7,shading='auto')
 ax[0].plot(np.linspace(6.5,6.5,len(arr)), full_data['z']*1000, color='red', linestyle='--', label='6.5 mm')
 ax[0].plot(np.linspace(7.25,7.25,len(arr)), full_data['z']*1000, color='red', linestyle='--', label='7.25 mm')
 ax[0].plot(np.linspace(8,8,len(arr)), full_data['z']*1000, color='red', linestyle='--', label='8 mm')
