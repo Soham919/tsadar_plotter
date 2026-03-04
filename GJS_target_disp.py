@@ -92,7 +92,7 @@ P_zr = interp_Prz(p,r,z)
 #---------- Calculate Force and Displacement -----------#
 F_foil = force_on_foil(P_zr, 15, -2.5, 2.5, 2.5, 7.5)/(10**6) # converting from mm^2 to m^2  
 
-#P = 2e5  # Pressure in Pa for upper threshold
+P = 5.78e6*(700/1500)  # Pressure in Pa for upper threshold
 t = (160)*(10**(-6)) # time in seconds
 A1 = 4e-6   # Area of the Si3N4 window in m^2
 l1 = 10**(-6) # thickness of the Si3N4 window in m
@@ -109,4 +109,4 @@ print(f"\nMass of target = {m*1000} g")
 
 print(f"Average pressure on target = {F_foil/(A1+A2)} Pa")
 
-print(f"\n\nTarget is displaced by {GJS_target_disp(F_foil,t,m)*1000} mm")
+print(f"\n\nTarget is displaced by {GJS_target_disp(P*(A1+A2),t,m)*1000} mm")
