@@ -109,10 +109,10 @@ temperatures = [10*u.eV, 25*u.eV, 50*u.eV, 100*u.eV]
 ion = Particle('p+')
 
 probe_wavelengths = np.array([526.5, 263.25])*u.nm
-probe_energy= 30*u.J
+probe_energy= 45*u.J
 probe_pulse = 3.7*u.ns
 probe_fnum = 6.7 # Hansen 2019 mitigation
-probe_area = np.pi*(100*u.um/2)**2
+probe_area = np.pi*(200*u.um/2)**2
 probe_intensity = (probe_energy/probe_pulse/probe_area).to(u.W/u.cm**2)
 
 
@@ -146,7 +146,7 @@ ax.axhline(1, color='gray')
 colors = ['lime', 'blueviolet']
 linestyles = ['solid', 'dashed','dotted', 'dashdot']
 
-ffom = 'Pg.1'
+ffom = 'Eq.1'
 
 for w, wavelength in enumerate(probe_wavelengths):
     probe_freq = (2*np.pi*u.rad*const.c.si/wavelength).to(u.rad/u.s) 

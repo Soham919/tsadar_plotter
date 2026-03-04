@@ -2,7 +2,7 @@ import numpy as np
 
 def angle_between(v1, v2, degrees=False):
     """
-    Compute angle between two vectors.
+    Compute angle between two vectors in cartesian geometry.
 
     Parameters
     ----------
@@ -35,3 +35,31 @@ def angle_between(v1, v2, degrees=False):
         angle = np.degrees(angle)
 
     return angle
+
+def cross_product(a, b):
+    """
+    Returns the cross product of two 3D vectors a and b.
+    Each vector should be an iterable of length 3.
+    """
+    if len(a) != 3 or len(b) != 3:
+        raise ValueError("Both vectors must have exactly 3 components")
+
+    return [
+        a[1]*b[2] - a[2]*b[1],
+        a[2]*b[0] - a[0]*b[2],
+        a[0]*b[1] - a[1]*b[0]
+    ]
+
+
+## Working in Si3N4 coordinate system
+
+v1 = [-2.5, -2.5, 0]
+v2 = [-2.5, 2.5, 0]
+n = cross_product(v1,v2)
+n = n/np.linalg(n)
+a = 
+b = 
+stalk = a-b
+
+print(f"normal vector of the Si3N4 frame = {n}")
+print(f"Angle between vectors is = {angle_between(v1,v2,True)}")

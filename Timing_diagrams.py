@@ -41,36 +41,42 @@ def supergaussian_fwhm(x, center=0.0, fwhm=1.0, m=2,
 
     return baseline + amplitude * np.exp(-np.abs((x - center)/w)**(2*m))
 
-t = np.linspace(-1,8,500)
-a1 = 300/600 # db power in TW
+t = np.linspace(-1,12,500)
+a1 = 250/600 # db power in TW
 a2 = 5/100 # 100 ps probe power in TW
 a3 = 45/3700 # 3.7 ns probe power in TW
-db = supergaussian_fwhm(t,0.45,0.6,3,a1)  # Drive beams
-pb = supergaussian_fwhm(t,6,0.1,1,a2)  # Probe beam 100 ps
-pb2 = supergaussian_fwhm(t,6,3.7,10,a3)  # Probe beam 100 ps
+db = supergaussian_fwhm(t,0.45,0.6,4,a1)  # Drive beams
+pb1 = supergaussian_fwhm(t,7.8,0.1,1,a2)  # Probe beam 100 ps
+pb2 = supergaussian_fwhm(t,8,3.7,10,a3)  # Probe beam 100 ps
 
 
 
 fig, ax = plt.subplots(figsize=(6,3))
+
 ax.plot(t, db, color ='red',linewidth=2,label=r'Drive Beam : 3$\omega$')
-ax.plot(t, pb, color ='limegreen',linewidth=2, label = r'Probe Beam : 2$\omega$')
-ax.set_title(r'Timing diagram for RIDs : 103409, 103615, 103653', pad=15)
+ax.plot(t, pb1, color ='limegreen',linewidth=2, label = r'Probe Beam : 2$\omega$')
+ax.plot(t+0.8, pb1, color ='limegreen',linewidth=1,linestyle='--')
+ax.plot(t+1.9, pb1, color ='limegreen',linewidth=1,linestyle='--', label = r'timing variable')
+#ax.plot(t-1, pb1, color ='limegreen',linewidth=1,linestyle='--')
+
+
+ax.set_title(r'Timing diagram for RIDs : 104293-104305', pad=15)
 ax.set_xlabel(r"$t (ns)$")
 ax.set_ylabel(r"$Approx. P (TW)$")
-ax.set_ylim([0, 0.6])
-ax.set_xlim([-0.2, 8])
+ax.set_ylim([0, 0.5])
+ax.set_xlim([-0.2, 12])
 
-t1 = ax.axvline(x=4, color='limegreen', linestyle='--')
-t2 = ax.axvline(x=8, color='limegreen', linestyle='--')
+# t1 = ax.axvline(x=4, color='limegreen', linestyle='--')
+# t2 = ax.axvline(x=8, color='limegreen', linestyle='--')
 
 
-ax.axvspan(4,8, ymin = 0, ymax = 1,
-                    color='greenyellow',        # fill color
-                    alpha=0.2,           # transparency
-                    edgecolor='limegreen',    # outline color
-                    linewidth=1.5,       # outline width
-                    linestyle='-',      # outline style (optional)
-                    label='Timing variable')
+# ax.axvspan(4,8, ymin = 0, ymax = 1,
+#                     color='greenyellow',        # fill color
+#                     alpha=0.2,           # transparency
+#                     edgecolor='limegreen',    # outline color
+#                     linewidth=1.5,       # outline width
+#                     linestyle='-',      # outline style (optional)
+#                     label='Timing variable')
 
 ax.grid(True)
 plt.legend()

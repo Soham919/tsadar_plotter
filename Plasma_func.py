@@ -9,6 +9,7 @@ me = constants.electron_mass # mass electron(kg)
 mp = constants.proton_mass # mass of H(kg)
 pi = constants.pi # pi
 c = constants.c
+h = constants.h
 
 
 def v_th(T,m):
@@ -338,6 +339,25 @@ def disp_EPW(ne, Te, k):
 
     return [w,gamma]
 
+def n_photon(lam,E):
+    """
+    Calculates the total power from laser beams on a certain surface area
+    Parameters
+    ----------
+    w : float
+        Wavelength (nm)
+    E : float
+        Energy in beam (J)
+    Returns
+    -------
+    n : float
+        Number of photons
+    """
+    lam = lam*(10**(-9))
+    w = c/lam
+    n = E/(h*w)
+    return n
+
 #plt.plot(x,RH_T(x))
 #plt.show()
 
@@ -414,11 +434,13 @@ def disp_EPW(ne, Te, k):
 # plt.show()
 
 ## MAch number check
-# A = pi*((0.003)**2)  # area in cm2
-# print(power_calc(1,3,0.03,A))
+# ## Laser power check
+#A = pi*((0.003)**2)  # area in cm2
+# #print(power_calc(1,3,0.03,A))
 
-# a = cs_ij(0.413431,0.103357,1,4,1,2,50)
-# b = cs(1,1,50)
+# ## Sound speed check
+# a = cs_ij(0.4,0.1,1,4,1,2,50)
+# # b = cs(1,1,50)
     
 k = np.linspace(0.01,1,100)
 
@@ -426,5 +448,30 @@ w, y = disp_EPW(10^15, 100, k)
 k_lam = k*lam_db(100,10^15)
 plt.plot(k_lam, y)
 plt.show()
-#print(a)
-#print(b)
+# print(a)
+# print(b)
+
+# Laser light momentum
+# lam = 351*(10**(-9))
+# n = n_photon(351,3300)
+# p = n*h*lam
+# print(f"p = {p*(10**(12))/600} Kgm/s^2")
+
+## Mean Free Paths 
+# t = np.linspace(0.5,1,50)
+# ni = np.linspace(0.1,1,50)
+# T, N = np.meshgrid(t, ni)
+# fig, ax = plt.subplots()
+# mfp_HHe = mfp_ii(1,14,1,3,T,N/9)
+# mfp_HH = mfp_ii(1,1,1,1,T,N)
+# mfp = ((mp/me)**(0.5))*(1/mfp_HH + 1/mfp_HHe)**(-1)
+# im = ax.pcolormesh(T,N,mfp)
+# # Contours at specific values
+# levels = [2, 5, 7]
+# contours = ax.contour(T, N, mfp, levels=levels, colors="white",linestyles=["-.","-.","-."])
+# # labels
+# ax.set_xlabel("T(KeV)")
+# ax.set_ylabel(r"$n_{i}(1e20 cm^{-3})$")
+# ax.set_title("H+/N3+ pedestal length 2026")
+# plt.colorbar(im, label=r'$\sqrt{\frac{mi}{me}}\lambda_{ij}$ (mm)', ax=ax)
+# plt.show()
