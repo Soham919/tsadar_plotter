@@ -313,6 +313,31 @@ def power_calc(n,E,t,A):
     P = P*1e-16 # TW/cm2
     return P
 
+def disp_EPW(ne, Te, k):
+    """
+    Calculates the electron plasma wave frequency and Landau damping rate based on GnB eq (8.3.18), (8.3.19)
+    Parameters
+    ----------
+    ne : float
+        Electron density (m^-3)
+    Te : float
+        Electron temperature (eV)
+    k : float
+        Wave number (m^-1)
+
+    Returns
+    -------
+    w, gamma : float
+        Frequency(s^-1) and damping rate
+    """
+    wp = omg_p(ne)
+    w = np.sqrt(wp**2 + 3*(e*Te/me)*(k**2))
+    k_lamdb = k*lam_db(Te, ne)
+    constant = np.sqrt(pi/8)*wp/((abs(k_lamdb))**3)
+    gamma = -1*constant*np.exp((-1/(2*(k_lamdb)**2)) - 3/2)
+
+    return [w,gamma]
+
 #plt.plot(x,RH_T(x))
 #plt.show()
 
@@ -388,10 +413,18 @@ def power_calc(n,E,t,A):
 # plt.legend()
 # plt.show()
 
-A = pi*((0.003)**2)  # area in cm2
-print(power_calc(1,3,0.03,A))
+## MAch number check
+# A = pi*((0.003)**2)  # area in cm2
+# print(power_calc(1,3,0.03,A))
 
-a = cs_ij(0.413431,0.103357,1,4,1,2,50)
-b = cs(1,1,50)
+# a = cs_ij(0.413431,0.103357,1,4,1,2,50)
+# b = cs(1,1,50)
+    
+k = np.linspace(0.01,1,100)
+
+w, y = disp_EPW(10^15, 100, k)
+k_lam = k*lam_db(100,10^15)
+plt.plot(k_lam, y)
+plt.show()
 #print(a)
 #print(b)
