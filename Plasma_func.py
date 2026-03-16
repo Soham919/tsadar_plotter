@@ -433,7 +433,7 @@ def n_photon(lam,E):
 # plt.legend()
 # plt.show()
 
-## MAch number check
+## Mach number check
 # ## Laser power check
 #A = pi*((0.003)**2)  # area in cm2
 # #print(power_calc(1,3,0.03,A))
@@ -441,15 +441,15 @@ def n_photon(lam,E):
 # ## Sound speed check
 # a = cs_ij(0.4,0.1,1,4,1,2,50)
 # # b = cs(1,1,50)
-    
-k = np.linspace(0.01,1,100)
 
-w, y = disp_EPW(10^15, 100, k)
-k_lam = k*lam_db(100,10^15)
-plt.plot(k_lam, y)
-plt.show()
-# print(a)
-# print(b)
+## EPW landau damping check    
+# k = np.linspace(0.01,1,100)
+
+# w, y = disp_EPW(10^15, 100, k)
+# k_lam = k*lam_db(100,10^15)
+# plt.plot(k_lam, y)
+# plt.show()
+##
 
 # Laser light momentum
 # lam = 351*(10**(-9))
@@ -458,20 +458,21 @@ plt.show()
 # print(f"p = {p*(10**(12))/600} Kgm/s^2")
 
 ## Mean Free Paths 
-# t = np.linspace(0.5,1,50)
-# ni = np.linspace(0.1,1,50)
-# T, N = np.meshgrid(t, ni)
-# fig, ax = plt.subplots()
-# mfp_HHe = mfp_ii(1,14,1,3,T,N/9)
-# mfp_HH = mfp_ii(1,1,1,1,T,N)
-# mfp = ((mp/me)**(0.5))*(1/mfp_HH + 1/mfp_HHe)**(-1)
-# im = ax.pcolormesh(T,N,mfp)
-# # Contours at specific values
-# levels = [2, 5, 7]
-# contours = ax.contour(T, N, mfp, levels=levels, colors="white",linestyles=["-.","-.","-."])
-# # labels
-# ax.set_xlabel("T(KeV)")
-# ax.set_ylabel(r"$n_{i}(1e20 cm^{-3})$")
-# ax.set_title("H+/N3+ pedestal length 2026")
-# plt.colorbar(im, label=r'$\sqrt{\frac{mi}{me}}\lambda_{ij}$ (mm)', ax=ax)
-# plt.show()
+t = np.linspace(0.5,1.5,100)
+ni = np.linspace(0.1,2,100)
+T, N = np.meshgrid(t, ni)
+fig, ax = plt.subplots()
+mfp_HHe = mfp_ii(1,14,1,3,T,N*(0.2))
+mfp_HH = mfp_ii(1,1,1,1,T,N*(0.8))
+mfp = ((mp/me)**(0.5))*(1/mfp_HH + 1/mfp_HHe)**(-1)
+im = ax.pcolormesh(T,N,mfp)
+# Contours at specific values
+levels = [2, 3, 5, 7]
+contours = ax.contour(T, N, mfp, levels=levels, colors="white",linestyles=["-.","-.","-."])
+# labels
+ax.clabel(contours, inline=True, fontsize=8, fmt={2: '2 mm', 3: '3 mm', 5: '5 mm', 7: '7 mm'})    
+ax.set_xlabel("T(KeV)")
+ax.set_ylabel(r"$n_{i}(1e20 cm^{-3})$")
+ax.set_title("H+(0.8)/N3+(0.2) pedestal length 2026")
+plt.colorbar(im, label=r'$\sqrt{\frac{mi}{me}}\lambda_{ij}$ (mm)', ax=ax)
+plt.show()

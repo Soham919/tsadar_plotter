@@ -12,11 +12,11 @@ pi = constants.pi # pi
 c = constants.c
 h = constants.h
 
-u_2019 = 0.75
-epb = np.array([250,150,80]) # energy per beam in J
+u_2019 = 0.722
+epb = np.array([235,150,80]) # energy per beam in J
 n = 12 # number of beams
 E_total = epb*n + 120 # total energy in J, beam 47 is at 120 J
-u_2026 = u_2019*((E_total/(2*2500))**(1/5))
+u_2026 = u_2019*((E_total/(2950)*(1300/1000))**(1/5))
 
 t = np.linspace(0,10,50)
 # 1st order correction to the 2019 design

@@ -8,8 +8,15 @@ field = 'density'
 fn = "D-GJ-C-232_H2N2_1500psi.h5"
 full_data = GJS_analyze(fn, field)
 r, z, q = full_data
-q = q*(80/1500)  # scale the density to match whatever psi you want
-
+q = q#*(80/1500)  # scale the density to match whatever psi you want
+f1 = 9/10  # fraction of H
+f2 = 1/10  # fraction other gas
+A1 = 1 # atomic mass of H
+A2 = 14 # atomic mass of other gas
+mp = constants.proton_mass # mass of H(kg)
+n = q
+n = q/(f1*(A1*mp) + f2*(A2*mp))  # convert from mass density to average number density
+q = (n*(0.8)*A1*mp + n*(0.2)*A2*mp)  # convert back to mass density for H2(0.8)/N2(0.2)
 # ------ Convert data to lower resolution for writing to input deck ------ #
 
 step = 10  # resolution of the profile in index space
@@ -94,7 +101,7 @@ $prof
  thick = {v1},
  itnuc = 0,
  ieos = 8, 4,
- mixfrac = 0.9, 0.1,
+ mixfrac = 0.8, 0.2,
  dens_mat = {v2},
  temp = 10.0,
  $end
@@ -120,7 +127,7 @@ t3 = """
  &end
 """
  # write the input deck with the profiles for each cell
-with open("lilac_data_input_80psi.txt", "w") as f:
+with open("lilac_data_input.txt", "w") as f:
     
     f.write(t1) # write the first part of the input deck
     f.write("\n")

@@ -112,9 +112,9 @@ probe_wavelengths = np.array([526.5, 263.25])*u.nm
 probe_energy= 45*u.J
 probe_pulse = 3.7*u.ns
 probe_fnum = 6.7 # Hansen 2019 mitigation
-probe_area = np.pi*(200*u.um/2)**2
+probe_area = np.pi*(100*u.um/2)**2
 probe_intensity = (probe_energy/probe_pulse/probe_area).to(u.W/u.cm**2)
-
+a_Hansen = 1/50
 
 
 
@@ -171,7 +171,7 @@ for w, wavelength in enumerate(probe_wavelengths):
         elif ffom == 'Eq.1':
             
 
-            ax.set_ylabel("Filamentation FOM (Grech) Time resolved TS ")
+            ax.set_ylabel("Filamentation FOM (Grech) Time Resolved TS ")
 
             
             ir = iaw_ratio(T_e=Te, T_i=T_i, Z=ion.charge_number, 
@@ -189,7 +189,7 @@ for w, wavelength in enumerate(probe_wavelengths):
                     (ne/nc).to(u.dimensionless_unscaled).value*
                     3/Te.to(u.keV).value*
                     (probe_fnum/8)**2 
-                    )
+                    )*(a_Hansen)
                     
         
         ax.plot(ne.value, FFOM, linestyle=linestyles[t],

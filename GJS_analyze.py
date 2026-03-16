@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from scipy import constants
 from h5_import import h5_to_dict
+from Omega60_func import gj_dens, gj_n
 
 def GJS_analyze(file,field):
     #--------- File path ---------- #
@@ -45,20 +46,20 @@ def GJS_analyze(file,field):
     A1 = 1 # atomic mass of H
     A2 = 14 # atomic mass of other gas
     Z = 3 # ionization state of the other gas
-    n=q
-    #n = q/(f1*(A1*mp) + f2*(A2*mp))
-    #n = ((f1*n) + (Z*f2*n))/(10**6)  # convert ni/m^3 to ne/cm^3 
-    #t = full_data['Density']  # temperature in K, from the ideal gas law
-    #q = q/(kb*t*(10**6))
+    n = q
+    n = q/(f1*(A1*mp) + f2*(A2*mp))  # convert from mass density to average number density
+    ni = ((f1*n) + (f2*n))/(10**6)  # convert to ni/cm^3 
+    ne = ((0.8*n) + (Z*0.2*n))/(10**6)  # convert ni/m^3 to ne/cm^3 
+    q2 = (n*(0.8)*A1*mp + n*(0.2)*A2*mp)/(10**3)  # convert back to mass density for
     #q = (3*q)/((5*mp)*(10**6))  # my attempt at going from kg/m3 -> /cm3 for H/He
     #q = (1*q)/((2.3*mp)*(10**6))  # my attempt at going from kg/m3 -> ni/cm3 for H/N
     #q = (1.4*q)/((2.3*mp)*(10**6))  # my attempt at going from kg/m3 -> ne/cm3 for H/N
 
-
+    n_hansen = gj_dens(1500,5,10,5)  # number density at z = 5 mm from Hansen's formula
 
     # ------ Plot -------- #
     # fig, ax = plt.subplots(1,2, figsize=(12,5))
-    # im = ax[0].pcolormesh(r, z, n, cmap='viridis',shading='auto')
+    # im = ax[0].pcolormesh(r, z, q2, cmap='viridis',shading='auto')
     # ax[0].axhline(y=5, color='red', linestyle='--', label='z = 5 mm')
     # ax[0].axhline(y=7.25, color='red', linestyle='--', label='z = 7.25 mm')
     # ax[0].axhline(y=8, color='red', linestyle='--', label='z = 8 mm')
@@ -67,21 +68,23 @@ def GJS_analyze(file,field):
     # ax[0].legend()
     # ax[0].set_xlabel('r (mm)')
     # ax[0].set_ylabel('z (mm)')
-    # plt.colorbar(im, label='n (g/cm^-3)', ax=ax[0])
+    # plt.colorbar(im, label='rho (g/cm^-3)', ax=ax[0])
 
     # for i in idx:
-    #     ax[1].plot(r, n[i,:], linestyle='-',label=f'z = {full_data["r"][i]*1000} mm')
+    #     ax[1].plot(r, q2[i,:], linestyle='-',label=f'z = {full_data["r"][i]*1000} mm')
+
+    # #ax[1].axhline(y=n_hansen, color='red', linestyle='--', label='z = 5 mm Hansen')  # expectation from Hansen
 
     # #ax[1].avhline(x=5, color='black', linestyle='--', label='foil location')
     # #ax[1].avhline(x=7.5, color='grey', linestyle='--')
     # #ax[1].avhline(x=2.5, color='grey', linestyle='--')
     # ax[1].set_xlabel('r (mm)')
-    # ax[1].set_ylabel('n (g/cm^-3)')
+    # ax[1].set_ylabel('rho (g/cm^-3)')
     # ax[1].legend()
 
-    # fig.suptitle("n for H2/N2 Gas Jet at 80 psi")
+    # fig.suptitle("rho for H2(0.8)/N2(0.2) Gas Jet at 1500 psi")
     # plt.show()
     return [r, z, q]
 
 
-#GJS_analyze("D-GJ-C-232_H2N2_1500psi.h5", "density")
+GJS_analyze("D-GJ-C-232_H2N2_1500psi.h5", "density")
