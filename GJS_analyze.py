@@ -3,8 +3,9 @@ import h5py
 import matplotlib.pyplot as plt
 from pathlib import Path
 from scipy import constants
-from h5_import import h5_to_dict
 from Omega60_func import gj_dens, gj_n
+from h5_helper import h5_to_dict
+
 
 def GJS_analyze(file,field):
     #--------- File path ---------- #

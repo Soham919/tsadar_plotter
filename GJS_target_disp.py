@@ -3,7 +3,7 @@ import h5py
 import matplotlib.pyplot as plt
 from pathlib import Path
 from scipy import constants
-from h5_import import h5_to_dict
+from h5_helper import h5_to_dict
 from scipy.interpolate import RegularGridInterpolator
 
 def interp_Prz(P_rz, r_grid, z_grid,

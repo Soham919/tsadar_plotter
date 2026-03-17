@@ -4,8 +4,24 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 
-def print_h5(name, obj):
-    print(name)
+def h5_show(fp):
+    with h5py.File(fp, "r") as f:
+        f.visititems(show)
+
+def show(name, obj):
+    if isinstance(obj, h5py.Group):
+        print(f"[Group]   {name}")
+    elif isinstance(obj, h5py.Dataset):
+        print(f"[Dataset] {name}  shape={obj.shape} dtype={obj.dtype}")
+
+def show_attr(fp):
+    with h5py.File(fp, "r") as f:
+        for key in f.keys():
+            obj = f[key]
+            print(f"\nObject: {key}")
+            print("Attributes:")
+            for attr_key, attr_val in obj.attrs.items():
+                print(f"  {attr_key}: {attr_val}")
 
 def h5_to_dict(node):
     """Recursively converts an HDF5 group/file into a nested dictionary."""
@@ -27,3 +43,7 @@ def h5_to_dict(node):
         data_dict['_attrs'] = dict(node.attrs)
         
     return data_dict
+
+
+
+    
