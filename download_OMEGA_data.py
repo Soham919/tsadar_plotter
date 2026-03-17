@@ -11,14 +11,20 @@ import os
 USERNAME = os.environ["OMEGA_USER"]
 PASSWORD = os.environ["OMEGA_PASSWORD"]
 
-SHOTNUMBER = "117828"   # The shot data you want
+SHOTNUMBER = "117839"   # The shot data you want
 DIAG = ["EPW","IAW","P9TBD_CCD","XRPHC-CID","SRS_STREAK","SBS_STREAK","TPDI"]   # The diagnostic images you want
 PAGE_URL = (
     "https://omegaops.lle.rochester.edu/lir"
     f"?goSingle=goSingle&singleReport=Admin_Summary&shotnumber={SHOTNUMBER}"
 )   # This is the url for the Omega shot images and reports
 Download_url = "https://omegaops.lle.rochester.edu/lirdir/archiveDownload.py"  # This is the url for the download button
-baseDir = Path("/Users/soham/Documents/Kinshock/Kinshock-26A/data")   # where you want to save teh data
+
+# ---- Windows ----
+baseDir = Path().resolve().parent
+baseDir = baseDir/"Kinshock"/"Kinshock-26A"/"Data"   # where you want to save teh data
+# ---- Mac -----
+#baseDir = Path("/Users/soham/Documents/Kinshock/Kinshock-26A/data")  # where you want to save the data
+# -------------------------------
 shot = Path(f"{SHOTNUMBER}")
 shot = baseDir / shot
 if not shot.exists():
@@ -160,7 +166,7 @@ print(f"Saved CSV: {OUTPUT_CSV}")
 
 for diag in DIAG: # step through the diagnostics you want
 
-    matches = [r for r in records if r["diag"] == diag]
+    matches = [r for r in records if r["diag"].find(diag) != -1]
 
     for match in matches:
         image_id = match["image_id"]
