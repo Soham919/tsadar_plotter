@@ -128,6 +128,8 @@ for r in records:
         r["srcfile"],
         r["archive_file"],
     )
+    if r["diag"] == "EPW_CCD":
+        True
     if key not in seen:
         seen.add(key)
         unique_records.append(r)
@@ -181,7 +183,7 @@ for diag in DIAG: # step through the diagnostics you want
                 r.raise_for_status()
 
                 content_disp = r.headers.get("Content-Disposition")
-                filename = f"{image_id}.h5"
+                filename = f"{image_id}.hdf"
                 if content_disp and "filename=" in content_disp:  # take out the file name from the html headers
                     filename = content_disp.split("filename=")[-1].strip('"')
                 

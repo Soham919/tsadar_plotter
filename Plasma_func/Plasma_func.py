@@ -51,12 +51,14 @@ def lam_db(Te, ne):
 
     Examples
     --------
-    >>> print(lam_db(10**18,1000))
+    >>> print(lam_db(1000,1e18))
     0.00023508188704793946
     """
     kT = Te*e
     omg = omg_p(ne)
+    omg = omg[None,:]
     vt = (kT/me)**(0.5)
+    vt = vt[:,None]
     lam = vt/omg
     return lam
 
@@ -399,46 +401,43 @@ if __name__ == "__main__":
     # plt.legend()
     # plt.show()
 
-    ## Mach number check
-    # ## Laser power check
-    #A = pi*((0.003)**2)  # area in cm2
-    # #print(power_calc(1,3,0.03,A))
+# ## Mean Free Paths 
+# t = np.linspace(0.5,1.5,100)
+# ni = np.linspace(0.1,2,100)
+# T, N = np.meshgrid(t, ni)
+# fig, ax = plt.subplots()
+# mfp_HHe = mfp_ii(1,14,1,3,T,N*(0.2))
+# mfp_HH = mfp_ii(1,1,1,1,T,N*(0.8))
+# mfp = ((mp/me)**(0.5))*(1/mfp_HH + 1/mfp_HHe)**(-1)
+# im = ax.pcolormesh(T,N,mfp)
+# # Contours at specific values
+# levels = [2, 3, 5, 7]
+# contours = ax.contour(T, N, mfp, levels=levels, colors="white",linestyles=["-.","-.","-."])
+# # labels
+# ax.clabel(contours, inline=True, fontsize=8, fmt={2: '2 mm', 3: '3 mm', 5: '5 mm', 7: '7 mm'})    
+# ax.set_xlabel("T(KeV)")
+# ax.set_ylabel(r"$n_{i}(1e20 cm^{-3})$")
+# ax.set_title("H+(0.8)/N3+(0.2) pedestal length 2026")
+# plt.colorbar(im, label=r'$\sqrt{\frac{mi}{me}}\lambda_{ij}$ (mm)', ax=ax)
+# plt.show()
+lam = 526.5*(1e-9)
+t = np.linspace(1,50,100)
+ne = np.linspace(1e18,1e20,200)*10**6
+db = lam_db(t,ne)
+k = 2*(2*pi/lam)*np.sin(pi/6)
+a = 1/(k*db)
 
-    # ## Sound speed check
-    # a = cs_ij(0.4,0.1,1,4,1,2,50)
-    # # b = cs(1,1,50)
+fig, ax = plt.subplots()
+T,N = np.meshgrid(t,ne/1e24)
+im = ax.pcolormesh(N, T, a.T, shading='auto')
+# Contours at specific values
+levels = [1, 10, 20, 30, 40]
+contours = ax.contour(N, T, a.T, levels=levels, colors="white",linestyles=["-.","-.","-."],shading='auto')
+#labels
+ax.clabel(contours, inline=True, fontsize=8, fmt={1: r'$\alpha$ = 1', 10: r'$\alpha$ = 10', 20: r'$\alpha$ = 20', 30: r'$\alpha$ = 30', 40: r'$\alpha$ = 40'})    
+ax.set_xlabel(r"$n_{e}(\times 10^{18} cm^{-3})$")
+ax.set_ylabel(r"$T_e (eV)$")
+ax.set_title(r"Scattering parameter $\alpha = \frac{1}{k\lambda_D}$")
+plt.colorbar(im, label=r'$\alpha$', ax=ax)
+plt.show()
 
-    ## EPW landau damping check    
-    # k = np.linspace(0.01,1,100)
-
-    # w, y = disp_EPW(10^15, 100, k)
-    # k_lam = k*lam_db(100,10^15)
-    # plt.plot(k_lam, y)
-    # plt.show()
-    ##
-
-    # Laser light momentum
-    # lam = 351*(10**(-9))
-    # n = n_photon(351,3300)
-    # p = n*h*lam
-    # print(f"p = {p*(10**(12))/600} Kgm/s^2")
-
-    ## Mean Free Paths 
-    t = np.linspace(0.5,1.5,100)
-    ni = np.linspace(0.1,2,100)
-    T, N = np.meshgrid(t, ni)
-    fig, ax = plt.subplots()
-    mfp_HHe = mfp_ii(1,14,1,3,T,N*(0.2))
-    mfp_HH = mfp_ii(1,1,1,1,T,N*(0.8))
-    mfp = ((mp/me)**(0.5))*(1/mfp_HH + 1/mfp_HHe)**(-1)
-    im = ax.pcolormesh(T,N,mfp)
-    # Contours at specific values
-    levels = [2, 3, 5, 7]
-    contours = ax.contour(T, N, mfp, levels=levels, colors="white",linestyles=["-.","-.","-."])
-    # labels
-    ax.clabel(contours, inline=True, fontsize=8, fmt={2: '2 mm', 3: '3 mm', 5: '5 mm', 7: '7 mm'})    
-    ax.set_xlabel("T(KeV)")
-    ax.set_ylabel(r"$n_{i}(1e20 cm^{-3})$")
-    ax.set_title("H+(0.8)/N3+(0.2) pedestal length 2026")
-    plt.colorbar(im, label=r'$\sqrt{\frac{mi}{me}}\lambda_{ij}$ (mm)', ax=ax)
-    plt.show()
