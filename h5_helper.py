@@ -3,10 +3,29 @@ import os
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
+from pyhdf.SD import SD, SDC
+
 
 def h5_show(fp):
-    with h5py.File(fp, "r") as f:
-        f.visititems(show)
+    s = str(fp).split(".")[-1]
+    if s in ["h5", "hdf5"]:
+        with h5py.File(fp, "r") as f:
+            f.visititems(show)
+    elif s == "hdf":
+        file = SD(str(fp), SDC.READ)
+        print(file.datasets())
+
+def h5_import(fp, dataset):
+    s = str(fp).split(".")[-1]
+    if s in ["h5", "hdf5"]:
+        with h5py.File(fp, "r") as f:
+            data = f[dataset][:]
+            return data
+    elif s == "hdf":
+        file = SD(str(fp), SDC.READ)
+        data = file.select(dataset)
+        data = data[:]
+        return data
 
 def show(name, obj):
     if isinstance(obj, h5py.Group):

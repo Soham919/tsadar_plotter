@@ -7,7 +7,7 @@ import re
 import pandas as pd
 from TS_aux import load_file
 from TS_aux import shot_data
-from Plasma_func import f_rho
+from Plasma_func.Plasma_func import f_rho
 
 def plot_92537(data):
     ### PLOT LEARNED PARAMETERS for H2 AND HE SHOCKS ###

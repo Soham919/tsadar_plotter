@@ -11,7 +11,7 @@ import os
 USERNAME = os.environ["OMEGA_USER"]
 PASSWORD = os.environ["OMEGA_PASSWORD"]
 
-SHOTNUMBER = "117839"   # The shot data you want
+SHOTNUMBER = "117838"   # The shot data you want
 DIAG = ["EPW","IAW","P9TBD_CCD","XRPHC-CID","SRS_STREAK","SBS_STREAK","TPDI"]   # The diagnostic images you want
 PAGE_URL = (
     "https://omegaops.lle.rochester.edu/lir"

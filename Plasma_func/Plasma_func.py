@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import constants
+import astropy.units as u
 
 eps = constants.epsilon_0 # epislon naught SI
 kb = constants.Boltzmann # Boltzmann constant SI
@@ -155,12 +156,6 @@ def mfp_ii(mi, mj, Zi, Zj, Ti, nj):
     mfp_ij = (num/den)*c
     return mfp_ij
 
-def cs(m, Z, Te):
-    m = m*mp
-    Te = e*Te
-    speed = ((5/3)*Z*Te/m)**(0.5)
-    return speed
-
 def nc(lam):
     """
     Calculates crirtical density of a laser with wavelength lam
@@ -183,40 +178,6 @@ def nc(lam):
     w = 2*pi*c/lam
     nc = (me*w**(2)*eps)/(e**(2))
     return nc/10**(6)
-
-def cs_ij(n1, n2, m1, m2, Z1, Z2, Te):
-    """
-    Calculates ion acoustic speed in a mixed thermalized plasma
-    Parameters
-    ----------
-    n1, n2 : float
-         Density of the ion species in 10^20 cm^-3.
-    m1, m2 : float
-        Masses of the ion species in atomic mass units.
-    Z1, Z2 : float
-        Charge states of species in e units
-    Te : float
-        Electron temprature in eV
-   
-    Returns
-    -------
-    cs_ij : float
-        Ion acoustic wave speed(sound speed) in a binary plasma in the cold limit Ti << Te
-
-    Examples
-    --------
-    >>> cs_ij(1,1,1,1,1,1)
-    0.22999999999999998
-    """
-    n1 = n1*10**6
-    n2 = n2*10**6
-    n0 = Z1*n1 + Z2*n2
-    f1 = Z1*n1/n0
-    f2 = Z2*n2/n0
-    cs1 = cs(m1,Z1,Te)**2
-    cs2 = cs(m2,Z2,Te)**2
-    cs_ij = (f1*cs1 + f2*cs2)**(0.5)
-    return cs_ij
 
 def f_rho(f1, Z1, Z2, ne):
     """
@@ -314,6 +275,7 @@ def power_calc(n,E,t,A):
     P = P*1e-16 # TW/cm2
     return P
 
+print(power_calc(1,10,100,pi*(0.01)**2))
 def disp_EPW(ne, Te, k):
     """
     Calculates the electron plasma wave frequency and Landau damping rate based on GnB eq (8.3.18), (8.3.19)
@@ -358,121 +320,125 @@ def n_photon(lam,E):
     n = E/(h*w)
     return n
 
-#plt.plot(x,RH_T(x))
-#plt.show()
-
-#print("Speed of sound in H+/He2+ plasma = ",cs_ij(0.067,0.033,1,4,1,2,50))
-#print("Speed of sound in H+ plasma = ",cs(1,1,50))
-
-# c = np.linspace(0.01,0.99,50)
-# f = 1-c
-# df = 0.2
-# fig1, ax1 = plt.subplots()
-# ax1.plot(c,cs_ij(df*2*c,df*2*f,1,14,1,2,55),label =r"$N^{2+}$")
-# ax1.plot(c,cs_ij(df*2*c,df*2*f,1,14,1,3,55),label =r"$N^{3+}$")
-# ax1.plot(c,cs_ij(df*2*c,df*2*f,1,14,1,4,55),label =r"$N^{4+}$")
-# ax1.set_xlabel(r"$H_{2}$(%)")
-# ax1.set_ylabel(r"$cs_{H^{+}/N^{Z+}}$")
-# ax1.set_title(r"Sound speed for $H_{2}/N_{2}$ gas mixture")
-# ax1.legend()
-# plt.show()
-
-#print(((mp/me)**(0.5))*mfp_hh)
 
 
-## ION DENSITIES FROM THE ELECTRON DENSITY
-# fi, ax = plt.subplots()
-# ax.plot(hconc,np.squeeze(f_rho(hconc,1,2,5)[0]),label="H")
-# ax.plot(hconc,np.squeeze(f_rho(hconc,1,2,5)[1]),label="He")
-# ax.set_xlabel("H fraction")
-# ax.set_ylabel(r"$n_{i}$")
-# ax.set_title(r"H and He number densities for $n_{e} = 5e19 cm^{-3}$")
-# plt.legend()
-# plt.show()
+if __name__ == "__main__":
+    #print(nc(351))
+    #plt.plot(x,RH_T(x))
+    #plt.show()
 
-# T = np.linspace(0.01,0.5,50)
-# fig, ax = plt.subplots()
-# ax.plot(T,mfp_ii(1,1,1,1,T,0.3))
-# ax.set_xlabel("T(KeV)")
-# ax.set_ylabel(r"$MFP(\mu m)$")
-# ax.set_title("H+/H+ MFP in 86801")
-# plt.show()
+    #print("Speed of sound in H+/He2+ plasma = ",cs_ij(0.067,0.033,1,4,1,2,50))
+    #print("Speed of sound in H+ plasma = ",cs(1,1,50))
 
-## RANKINE HUGONIOT CHECK
-# M = np.linspace(1,30,100)
-# rho1 = 1
-# u1 = 1
-# P1 = 1
-# [rho2,u2,P2] = RH(M,rho1,u1,P1)
-# fig, ax = plt.subplots(3,1)
-# ax[0].plot(M,rho2)
-# ax[1].plot(M,u2)
-# ax[2].plot(M,P2)
-# plt.show()
+    # c = np.linspace(0.01,0.99,50)
+    # f = 1-c
+    # df = 0.2
+    # fig1, ax1 = plt.subplots()
+    # ax1.plot(c,cs_ij(df*2*c,df*2*f,1,14,1,2,55),label =r"$N^{2+}$")
+    # ax1.plot(c,cs_ij(df*2*c,df*2*f,1,14,1,3,55),label =r"$N^{3+}$")
+    # ax1.plot(c,cs_ij(df*2*c,df*2*f,1,14,1,4,55),label =r"$N^{4+}$")
+    # ax1.set_xlabel(r"$H_{2}$(%)")
+    # ax1.set_ylabel(r"$cs_{H^{+}/N^{Z+}}$")
+    # ax1.set_title(r"Sound speed for $H_{2}/N_{2}$ gas mixture")
+    # ax1.legend()
+    # plt.show()
 
-# Sedov blast wave expansion
-# t = np.linspace(1e-11,1e-8,100)
-# E = 2500 # energy of the laser was 2.5 KJ
-# E2 = 2000
-# E3 = 1000
-# rho1 = 2e19*mp*(10**6)
-# [r,v] = blast_wave_r_v(E,rho1,t)
-# fig, ax = plt.subplots(2,1)
-# ax[0].plot(t*1e9,r/1000,label=r"$r ~ (\frac{Et^{2}}{\rho_{1}})^{1/5}$")
+    #print(((mp/me)**(0.5))*mfp_hh)
 
-# ax[0].set_title('Radius')
-# ax[0].set_xlabel(r"$t (ns)$")
-# ax[0].set_xlabel(r"$r (mm)$")
-# plt.legend()
 
-# ax[1].plot(v,t*1e9,label=r"$v \sim (\frac{E}{\rho_{1}t^{3}})^{1/5}$")
-# ax[1].set_title('velocity')
-# ax[1].set_xlabel(r"$t (ns)$")
-# ax[1].set_xlabel(r"$v (mm)$")
+    ## ION DENSITIES FROM THE ELECTRON DENSITY
+    # fi, ax = plt.subplots()
+    # ax.plot(hconc,np.squeeze(f_rho(hconc,1,2,5)[0]),label="H")
+    # ax.plot(hconc,np.squeeze(f_rho(hconc,1,2,5)[1]),label="He")
+    # ax.set_xlabel("H fraction")
+    # ax.set_ylabel(r"$n_{i}$")
+    # ax.set_title(r"H and He number densities for $n_{e} = 5e19 cm^{-3}$")
+    # plt.legend()
+    # plt.show()
 
-# plt.legend()
-# plt.show()
+    # T = np.linspace(0.01,0.5,50)
+    # fig, ax = plt.subplots()
+    # ax.plot(T,mfp_ii(1,1,1,1,T,0.3))
+    # ax.set_xlabel("T(KeV)")
+    # ax.set_ylabel(r"$MFP(\mu m)$")
+    # ax.set_title("H+/H+ MFP in 86801")
+    # plt.show()
 
-## Mach number check
-# ## Laser power check
-#A = pi*((0.003)**2)  # area in cm2
-# #print(power_calc(1,3,0.03,A))
+    ## RANKINE HUGONIOT CHECK
+    # M = np.linspace(1,30,100)
+    # rho1 = 1
+    # u1 = 1
+    # P1 = 1
+    # [rho2,u2,P2] = RH(M,rho1,u1,P1)
+    # fig, ax = plt.subplots(3,1)
+    # ax[0].plot(M,rho2)
+    # ax[1].plot(M,u2)
+    # ax[2].plot(M,P2)
+    # plt.show()
 
-# ## Sound speed check
-# a = cs_ij(0.4,0.1,1,4,1,2,50)
-# # b = cs(1,1,50)
+    # Sedov blast wave expansion
+    # t = np.linspace(1e-11,1e-8,100)
+    # E = 2500 # energy of the laser was 2.5 KJ
+    # E2 = 2000
+    # E3 = 1000
+    # rho1 = 2e19*mp*(10**6)
+    # [r,v] = blast_wave_r_v(E,rho1,t)
+    # fig, ax = plt.subplots(2,1)
+    # ax[0].plot(t*1e9,r/1000,label=r"$r ~ (\frac{Et^{2}}{\rho_{1}})^{1/5}$")
 
-## EPW landau damping check    
-# k = np.linspace(0.01,1,100)
+    # ax[0].set_title('Radius')
+    # ax[0].set_xlabel(r"$t (ns)$")
+    # ax[0].set_xlabel(r"$r (mm)$")
+    # plt.legend()
 
-# w, y = disp_EPW(10^15, 100, k)
-# k_lam = k*lam_db(100,10^15)
-# plt.plot(k_lam, y)
-# plt.show()
-##
+    # ax[1].plot(v,t*1e9,label=r"$v \sim (\frac{E}{\rho_{1}t^{3}})^{1/5}$")
+    # ax[1].set_title('velocity')
+    # ax[1].set_xlabel(r"$t (ns)$")
+    # ax[1].set_xlabel(r"$v (mm)$")
 
-# Laser light momentum
-# lam = 351*(10**(-9))
-# n = n_photon(351,3300)
-# p = n*h*lam
-# print(f"p = {p*(10**(12))/600} Kgm/s^2")
+    # plt.legend()
+    # plt.show()
 
-## Mean Free Paths 
-t = np.linspace(0.5,1.5,100)
-ni = np.linspace(0.1,2,100)
-T, N = np.meshgrid(t, ni)
-fig, ax = plt.subplots()
-mfp_HHe = mfp_ii(1,14,1,3,T,N*(0.2))
-mfp_HH = mfp_ii(1,1,1,1,T,N*(0.8))
-mfp = ((mp/me)**(0.5))*(1/mfp_HH + 1/mfp_HHe)**(-1)
-im = ax.pcolormesh(T,N,mfp)
-# Contours at specific values
-levels = [2, 3, 5, 7]
-contours = ax.contour(T, N, mfp, levels=levels, colors="white",linestyles=["-.","-.","-."])
-# labels
-ax.clabel(contours, inline=True, fontsize=8, fmt={2: '2 mm', 3: '3 mm', 5: '5 mm', 7: '7 mm'})    
-ax.set_xlabel("T(KeV)")
-ax.set_ylabel(r"$n_{i}(1e20 cm^{-3})$")
-ax.set_title("H+(0.8)/N3+(0.2) pedestal length 2026")
-plt.colorbar(im, label=r'$\sqrt{\frac{mi}{me}}\lambda_{ij}$ (mm)', ax=ax)
-plt.show()
+    ## Mach number check
+    # ## Laser power check
+    #A = pi*((0.003)**2)  # area in cm2
+    # #print(power_calc(1,3,0.03,A))
+
+    # ## Sound speed check
+    # a = cs_ij(0.4,0.1,1,4,1,2,50)
+    # # b = cs(1,1,50)
+
+    ## EPW landau damping check    
+    # k = np.linspace(0.01,1,100)
+
+    # w, y = disp_EPW(10^15, 100, k)
+    # k_lam = k*lam_db(100,10^15)
+    # plt.plot(k_lam, y)
+    # plt.show()
+    ##
+
+    # Laser light momentum
+    # lam = 351*(10**(-9))
+    # n = n_photon(351,3300)
+    # p = n*h*lam
+    # print(f"p = {p*(10**(12))/600} Kgm/s^2")
+
+    ## Mean Free Paths 
+    t = np.linspace(0.5,1.5,100)
+    ni = np.linspace(0.1,2,100)
+    T, N = np.meshgrid(t, ni)
+    fig, ax = plt.subplots()
+    mfp_HHe = mfp_ii(1,14,1,3,T,N*(0.2))
+    mfp_HH = mfp_ii(1,1,1,1,T,N*(0.8))
+    mfp = ((mp/me)**(0.5))*(1/mfp_HH + 1/mfp_HHe)**(-1)
+    im = ax.pcolormesh(T,N,mfp)
+    # Contours at specific values
+    levels = [2, 3, 5, 7]
+    contours = ax.contour(T, N, mfp, levels=levels, colors="white",linestyles=["-.","-.","-."])
+    # labels
+    ax.clabel(contours, inline=True, fontsize=8, fmt={2: '2 mm', 3: '3 mm', 5: '5 mm', 7: '7 mm'})    
+    ax.set_xlabel("T(KeV)")
+    ax.set_ylabel(r"$n_{i}(1e20 cm^{-3})$")
+    ax.set_title("H+(0.8)/N3+(0.2) pedestal length 2026")
+    plt.colorbar(im, label=r'$\sqrt{\frac{mi}{me}}\lambda_{ij}$ (mm)', ax=ax)
+    plt.show()

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import constants
-from Plasma_func import cs_ij, cs, RH, mfp_ii, f_rho
+from Plasma_func.Plasma_func import cs_ij, cs, RH, mfp_ii, f_rho
 
 eps = constants.epsilon_0 # epislon naught SI
 kb = constants.Boltzmann # Boltzmann constant SI
