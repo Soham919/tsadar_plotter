@@ -11,8 +11,9 @@ import os
 USERNAME = os.environ["OMEGA_USER"]
 PASSWORD = os.environ["OMEGA_PASSWORD"]
 
-SHOTNUMBER = "117838"   # The shot data you want
-DIAG = ["EPW","IAW","P9TBD_CCD","XRPHC-CID","SRS_STREAK","SBS_STREAK","TPDI"]   # The diagnostic images you want
+SHOTNUMBER = "92537"   # The shot data you want
+#DIAG = ["EPW","IAW","P9TBD_CCD","XRPHC-CID","SRS_STREAK","SBS_STREAK","TPDI"]   # The diagnostic images you want
+DIAG = ["EPW","IAW","TPDI"]   # The diagnostic images you want
 PAGE_URL = (
     "https://omegaops.lle.rochester.edu/lir"
     f"?goSingle=goSingle&singleReport=Admin_Summary&shotnumber={SHOTNUMBER}"
@@ -21,7 +22,7 @@ Download_url = "https://omegaops.lle.rochester.edu/lirdir/archiveDownload.py"  #
 
 # ---- Windows ----
 baseDir = Path().resolve().parent
-baseDir = baseDir/"Kinshock"/"Kinshock-26A"/"Data"   # where you want to save teh data
+baseDir = baseDir/"Kinshock"/"Kinshock-26A"/"Data"   # where you want to save the data
 # ---- Mac -----
 #baseDir = Path("/Users/soham/Documents/Kinshock/Kinshock-26A/data")  # where you want to save the data
 # -------------------------------
