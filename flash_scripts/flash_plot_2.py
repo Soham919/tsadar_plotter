@@ -1,0 +1,155 @@
+import h5py
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm, Normalize
+from pathlib import Path
+import yt
+from flash_helpers import *
+from scipy import constants
+from plotFLASH1d_profiles import *
+
+eps = constants.epsilon_0 # epislon naught SI
+kb = constants.Boltzmann # Boltzmann constant SI
+e = constants.e # charge of electron(Coulomb)
+me = constants.electron_mass # mass electron(kg)
+mp = constants.proton_mass # mass of H(kg)
+pi = constants.pi # pi
+c = constants.c
+h = constants.h
+A1 = 1 # H
+A2 = 28 # Si
+
+# ============================================================
+# User options
+# ============================================================
+
+baseDir = Path().resolve().parent
+
+# --------- Mac ------------
+runDir = baseDir / ".." / "Flash" / "test_runs" / "1D_power_test"
+file = "ks_hdf5_plt_cnt_0050"
+fp = runDir / file
+
+# Plot mode:
+#   "auto" -> detect 1D or 2D
+#   "1d"   -> force 1D profile plots
+#   "2d"   -> force 2D pcolormesh
+plotMode = "auto"
+
+# For 1D plots
+fields1D = [
+    "dens"
+    "depo"
+    "tele"
+    "tion"
+    "trad"
+    "cham",
+    "targ",
+    "gas",
+]
+
+# For 2D plots
+field2D = "dens"
+
+# Axis labels
+useMicrons = True
+
+# Save plots?
+savePlots = False
+saveDir = runDir / "plots"
+saveDir.mkdir(parents=True, exist_ok=True)
+
+
+
+# ============================================================
+# Main script
+# ============================================================
+
+ds = yt.load(fp)
+ad = ds.all_data()
+
+sim_time_ns = get_sim_time_ns(ds)
+
+print("current_time =", ds.current_time)
+print(f"time = {sim_time_ns:.4f} ns")
+
+print_fields(ds, ad)
+
+cg, dims = get_covering_grid(ds)
+
+# ============================================================
+# Plot 1D
+# ============================================================
+rays = True
+if rays == True:
+    ray_data = read_flash_rays(fp)
+
+xlims = [150,300]
+#plot_1d_profiles(ds, fields1D, useMicrons, savePlots, saveDir, fp, rays)
+plotFLASH1d_profiles(ds, cg, dims,xlims = xlims, ray_data= ray_data)
+
+
+# tags = ray_data[:, 0]
+
+# unique_tags, counts = np.unique(tags, return_counts=True)
+
+# print("Number of rays:", len(unique_tags))
+
+# ray_initial_power_W = []
+
+# for tag in unique_tags:
+#     r = ray_data[tags == tag]
+#     ray_initial_power_W.append(r[0, 4] * 1e-7)
+
+# ray_initial_power_W = np.array(ray_initial_power_W)
+
+# print("Total initial laser power W:", ray_initial_power_W.sum()/10**12)
+
+# print("Initial power per ray W min/max:", ray_initial_power_W.min(), ray_initial_power_W.max())
+
+
+# ============================================================
+# Plot 2D
+# ============================================================
+# rays = True
+# plot_2d_field(ds, "flash", "dens", useMicrons, savePlots, saveDir, fp, rays)
+
+# ray_data = read_flash_rays(fp)
+# tags = ray_data[:, 0]
+
+# unique_tags, counts = np.unique(tags, return_counts=True)
+
+# print("Number of rays:", len(unique_tags))
+
+# ray_initial_power_W = []
+
+# for tag in unique_tags:
+#     r = ray_data[tags == tag]
+#     ray_initial_power_W.append(r[0, 4] * 1e-7)
+
+# ray_initial_power_W = np.array(ray_initial_power_W)
+
+# print("Total initial laser power W:", ray_initial_power_W.sum()/10**12)
+
+# print("Initial power per ray W min/max:", ray_initial_power_W.min(), ray_initial_power_W.max())
+
+
+# ============================================================
+# Plot everything one by one
+# ============================================================
+# type = "gas"
+# if plotMode.lower() == "auto":
+#     detectedMode = detect_plot_dim_from_ds(ds)
+# else:
+#     detectedMode = plotMode.lower()
+
+# print("plot mode:", detectedMode)
+
+# if detectedMode == "1d":
+#     plot_1d_profiles(ds, cg, fields1D, sim_time_ns,useMicrons, savePlots, saveDir)
+
+# elif detectedMode == "2d":
+#     plot_2d_field(ds, cg, type, field2D, sim_time_ns,useMicrons, savePlots, saveDir)
+
+# else:
+#     raise ValueError(f"Unsupported detected plot mode: {detectedMode}")

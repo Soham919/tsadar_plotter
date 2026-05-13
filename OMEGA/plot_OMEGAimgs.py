@@ -1,12 +1,12 @@
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
-import h5_helper
+import h5_helpers.h5_helper as h5_helper
 from pathlib import Path
 
 baseDir = Path().resolve().parent
 # --------- Mac ------------
-# fp = baseDir/"Kinshock-26A"/"data"/"117828"
+# fp = baseDir/"Kinshock-26A"/"data"/"117828" # will change after creating the module folders.
 # file = "IAW-s117828.h5"
 # fp = fp / file
 

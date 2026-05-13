@@ -420,24 +420,26 @@ if __name__ == "__main__":
 # ax.set_title("H+(0.8)/N3+(0.2) pedestal length 2026")
 # plt.colorbar(im, label=r'$\sqrt{\frac{mi}{me}}\lambda_{ij}$ (mm)', ax=ax)
 # plt.show()
-lam = 526.5*(1e-9)
-t = np.linspace(1,50,100)
-ne = np.linspace(1e18,1e20,200)*10**6
-db = lam_db(t,ne)
-k = 2*(2*pi/lam)*np.sin(pi/6)
-a = 1/(k*db)
+    # lam = 526.5*(1e-9)
+    # t = np.linspace(1,50,100)
+    # ne = np.linspace(1e18,1e20,200)*10**6
+    # db = lam_db(t,ne)
+    # k = 2*(2*pi/lam)*np.sin(pi/6)
+    # a = 1/(k*db)
 
-fig, ax = plt.subplots()
-T,N = np.meshgrid(t,ne/1e24)
-im = ax.pcolormesh(N, T, a.T, shading='auto')
-# Contours at specific values
-levels = [1, 10, 20, 30, 40]
-contours = ax.contour(N, T, a.T, levels=levels, colors="white",linestyles=["-.","-.","-."],shading='auto')
-#labels
-ax.clabel(contours, inline=True, fontsize=8, fmt={1: r'$\alpha$ = 1', 10: r'$\alpha$ = 10', 20: r'$\alpha$ = 20', 30: r'$\alpha$ = 30', 40: r'$\alpha$ = 40'})    
-ax.set_xlabel(r"$n_{e}(\times 10^{18} cm^{-3})$")
-ax.set_ylabel(r"$T_e (eV)$")
-ax.set_title(r"Scattering parameter $\alpha = \frac{1}{k\lambda_D}$")
-plt.colorbar(im, label=r'$\alpha$', ax=ax)
-plt.show()
+    # fig, ax = plt.subplots()
+    # T,N = np.meshgrid(t,ne/1e24)
+    # im = ax.pcolormesh(N, T, a.T, shading='auto')
+    # # Contours at specific values
+    # levels = [1, 10, 20, 30, 40]
+    # contours = ax.contour(N, T, a.T, levels=levels, colors="white",linestyles=["-.","-.","-."],shading='auto')
+    # #labels
+    # ax.clabel(contours, inline=True, fontsize=8, fmt={1: r'$\alpha$ = 1', 10: r'$\alpha$ = 10', 20: r'$\alpha$ = 20', 30: r'$\alpha$ = 30', 40: r'$\alpha$ = 40'})    
+    # ax.set_xlabel(r"$n_{e}(\times 10^{18} cm^{-3})$")
+    # ax.set_ylabel(r"$T_e (eV)$")
+    # ax.set_title(r"Scattering parameter $\alpha = \frac{1}{k\lambda_D}$")
+    # plt.colorbar(im, label=r'$\alpha$', ax=ax)
+    # plt.show()
+
+    print(nc(351))
 

@@ -4,4 +4,7 @@
 .vscode/
 backup/
 __pycache__/
+ne_2D_1umAl.npy
+ni_2D_1umAl.npy
+rolling_window.py.txt
 

@@ -11,9 +11,14 @@ def h5_show(fp):
     if s in ["h5", "hdf5"]:
         with h5py.File(fp, "r") as f:
             f.visititems(show)
+    
     elif s == "hdf":
         file = SD(str(fp), SDC.READ)
         print(file.datasets())
+
+    elif "h5" in str(fp) or "hdf5" in str(fp):
+        with h5py.File(fp, "r") as f:
+            f.visititems(show)
 
 def h5_import(fp, dataset):
     s = str(fp).split(".")[-1]
