@@ -11,9 +11,9 @@ baseDir = Path().resolve().parent
 # fp = fp / file
 
 # --------- Windows ------------
-shot = "117827"  # change this for the shot you want to plot
-fp = baseDir/"Kinshock"/"Kinshock-26A"/"data"/shot
-saveDir = baseDir/"Kinshock"/"Kinshock-26A"/"data"/shot/"plots"
+shot = "92532"  # change this for the shot you want to plot
+fp = baseDir/"Kinshock"/"Kinshock-19A"/"data"/shot
+saveDir = baseDir/"Kinshock"/"Kinshock-19A"/"data"/shot/"plots"
 if not saveDir.exists():
     saveDir.mkdir(parents = True, exist_ok = True)
 
@@ -33,44 +33,44 @@ with h5py.File(fp/ f_iaw,'r') as f:
 with h5py.File(fp/ f_epw,'r') as f:
     epw = f["Streak_array"][:]
 
-with h5py.File(fp/ f_tbd,'r') as f:
-    tbd = f["Streak_array"][:]
+#with h5py.File(fp/ f_tbd,'r') as f:
+#    tbd = f["Streak_array"][:]
 
 with h5py.File(fp/ f_tpdi,'r') as f:
     tpdi = f["Streak_array"][:]
 
-with h5py.File(fp/ f_xrphc,'r') as f:
-    xr_bg = f["cid_background"][:]
-    xr_fg = f["cid_foreground"][:]
+#with h5py.File(fp/ f_xrphc,'r') as f:
+#    xr_bg = f["cid_background"][:]
+#    xr_fg = f["cid_foreground"][:]
 
 ## ------- Plot the XRPHC image --------
-fig, ax  = plt.subplots()
-xr_fg = xr_fg - xr_bg
-xr_fg = np.rot90(xr_fg, 2)  # rotate the image to be vertical
-im = ax.imshow(xr_fg, cmap='grey')  # adjust vmin and vmax for better contrast
-plt.colorbar(im, label='counts')
-ax.set_xticks([])
-ax.set_yticks([])
-ax.set_title(f"Shot {shot} - XRPHC-CID")
-save_path = saveDir / f"shot_{shot}_xrphc.png"
-plt.savefig(save_path, dpi=300, bbox_inches='tight')
-plt.show()
+# fig, ax  = plt.subplots()
+# xr_fg = xr_fg - xr_bg
+# xr_fg = np.rot90(xr_fg, 2)  # rotate the image to be vertical
+# im = ax.imshow(xr_fg, cmap='grey')  # adjust vmin and vmax for better contrast
+# plt.colorbar(im, label='counts')
+# ax.set_xticks([])
+# ax.set_yticks([])
+# ax.set_title(f"Shot {shot} - XRPHC-CID")
+# save_path = saveDir / f"shot_{shot}_xrphc.png"
+# plt.savefig(save_path, dpi=300, bbox_inches='tight')
+# plt.show()
 
 ## ------- Plot the TBD image --------
-ax.clear()
-fig, ax  = plt.subplots()
-im = ax.imshow(tbd[0,:,:], cmap='turbo',vmax = 2500)  # adjust vmin and vmax for better contrast
-plt.colorbar(im, label='counts')
-ax.set_xticks([])
-ax.set_yticks([])
-ax.set_title(f"Shot {shot} - P9TBD_CCD")
-save_path = saveDir / f"shot_{shot}_tbd.png"
-plt.savefig(save_path, dpi=300, bbox_inches='tight')
-fig.canvas.draw()
-plt.show()
+# ax.clear()
+# fig, ax  = plt.subplots()
+# im = ax.imshow(tbd[0,:,:], cmap='turbo',vmax = 2500)  # adjust vmin and vmax for better contrast
+# plt.colorbar(im, label='counts')
+# ax.set_xticks([])
+# ax.set_yticks([])
+# ax.set_title(f"Shot {shot} - P9TBD_CCD")
+# save_path = saveDir / f"shot_{shot}_tbd.png"
+# plt.savefig(save_path, dpi=300, bbox_inches='tight')
+# fig.canvas.draw()
+# plt.show()
 
 ## ------- Plot the TPDI image --------
-ax.clear()
+#ax.clear()
 fig, ax  = plt.subplots()
 im = ax.imshow(tpdi[0,:,:], cmap='turbo')  # adjust vmin and vmax for better contrast
 plt.colorbar(im, label='counts')

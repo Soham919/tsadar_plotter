@@ -119,7 +119,7 @@ def plot_117830_EPW_loss(data):
 
 def plot_117830_IAW(data):
     ### PLOT LEARNED PARAMETERS for H2 AND HE SHOCKS ###
-    im1 = data['117830']['117830-11']['learned_parameters.csv']
+    im1 = data['117830']['117830-6']['learned_parameters.csv']
     #epw = data['117830']['92530_8_nersc.csv']
 
     # Convert ion fractions to number denisties
@@ -133,9 +133,9 @@ def plot_117830_IAW(data):
     plt.rcParams.update({
     #    "font.family": "serif",             # pick font family
     #    "font.serif": ["Arial"],  # pick specific font
-        "font.size": 17,                     # set size
-        "axes.labelsize": 17,    # font size for axis labels
-        "axes.titlesize": 17,     # font size for titles
+        "font.size": 30,                     # set size
+        "axes.labelsize": 30,    # font size for axis labels
+        "axes.titlesize": 30,     # font size for titles
         # Tick direction
         "xtick.direction": "in",
         "ytick.direction": "in",
@@ -147,33 +147,34 @@ def plot_117830_IAW(data):
         "ytick.major.size": 3.5,
     })
 
-    fig1, ax1  = plt.subplots(3,1,figsize=(10,20))
+    fig1, ax1  = plt.subplots(2,2,figsize=(25,20))
 
-    window = 5  # rolling window
+    window = 10  # rolling window
     f1_1 = im1["fract_ion-1"].rolling(window=window).mean()
     f2_1 = im1["fract_ion-2"].rolling(window=window).mean()
-    f3_1 = im1["fract_ion-3"].rolling(window=window).mean()
+    #f3_1 = im1["fract_ion-3"].rolling(window=window).mean()
     std_f1_1 = im1["fract_ion-1"].rolling(window=window).std()
     std_f2_1 = im1["fract_ion-2"].rolling(window=window).std()
-    std_f3_1 = im1["fract_ion-3"].rolling(window=window).std()
+    #std_f3_1 = im1["fract_ion-3"].rolling(window=window).std()
 
     t1_1 = im1["Ti_ion-1"].rolling(window=window).mean()
     t2_1 = im1["Ti_ion-2"].rolling(window=window).mean()
-    t3_1 = im1["Ti_ion-3"].rolling(window=window).mean()
+    #t3_1 = im1["Ti_ion-3"].rolling(window=window).mean()
     std_t1_1 = im1["Ti_ion-1"].rolling(window=window).std()
     std_t2_1 = im1["Ti_ion-2"].rolling(window=window).std()
-    std_t3_1 = im1["Ti_ion-3"].rolling(window=window).std()
+    #std_t3_1 = im1["Ti_ion-3"].rolling(window=window).std()
 
     v1_1 = im1["Va_ion-1"].rolling(window=window).mean()
     v2_1 = im1["Va_ion-2"].rolling(window=window).mean()
-    v3_1 = im1["Va_ion-3"].rolling(window=window).mean()
+    #v3_1 = im1["Va_ion-3"].rolling(window=window).mean()
     std_v1_1 = im1["Va_ion-1"].rolling(window=window).std()
     std_v2_1 = im1["Va_ion-2"].rolling(window=window).std()
-    std_v3_1 = im1["Va_ion-3"].rolling(window=window).std()
+    #std_v3_1 = im1["Va_ion-3"].rolling(window=window).std()
 
 
-    ax1[0].plot(r, f1_1,color='orangered',linewidth=2, linestyle='-', label='H')
-    ax1[0].fill_between(r,f1_1-std_f1_1,f1_1+std_f1_1,
+    #ax1[0,1].plot(r, f1_1,color='orangered',linewidth=2, linestyle='-', label='H+')
+    ax1[0,1].scatter(r, f1_1,color='orangered', s=25, marker='o', label=r'$H^{+}$')
+    ax1[0,1].fill_between(r,f1_1-std_f1_1,f1_1+std_f1_1,
                 color='coral',        # fill color
                 alpha=0.2,           # transparency
                 edgecolor='tomato',    # outline color
@@ -181,8 +182,8 @@ def plot_117830_IAW(data):
                 linestyle='-',      # outline style (optional)
     )
     #ax1[0].plot(r, lp["fract_ion-2"],color='mediumblue',linewidth=2, linestyle='-', label='Cold H')
-    ax1[0].plot(r, f2_1,color='MediumSeaGreen',linewidth=2, linestyle='-', label='He2+')
-    ax1[0].fill_between(r,f2_1-std_f2_1,f2_1+std_f2_1,
+    ax1[0,1].scatter(r, f2_1,color='MediumSeaGreen', s=25, marker='o', label=r'$He^{2+}$')
+    ax1[0,1].fill_between(r,f2_1-std_f2_1,f2_1+std_f2_1,
                 color='MediumAquamarine',        # fill color
                 alpha=0.2,           # transparency
                 edgecolor='MediumSeaGreen',    # outline color
@@ -190,26 +191,26 @@ def plot_117830_IAW(data):
                 linestyle='-',      # outline style (optional)
     )
 
-    ax1[0].plot(r, f3_1,color='darkorchid',linewidth=2, linestyle='-', label='He+')
-    ax1[0].fill_between(r,f3_1-std_f3_1,f3_1+std_f3_1,
-                color='orchid',        # fill color
-                alpha=0.2,           # transparency
-                edgecolor='darkorchid',    # outline color
-                linewidth=1.5,       # outline width
-                linestyle='-',      # outline style (optional)
-    )
+    # ax1[0,1].plot(r, f3_1,color='darkorchid',linewidth=2, linestyle='-', label='He+')
+    # ax1[0,1].fill_between(r,f3_1-std_f3_1,f3_1+std_f3_1,
+    #             color='orchid',        # fill color
+    #             alpha=0.2,           # transparency
+    #             edgecolor='darkorchid',    # outline color
+    #             linewidth=1.5,       # outline width
+    #             linestyle='-',      # outline style (optional)
+    # )
 
 
-    ax1[0].set_title('Fractions Z = 1')
-    ax1[0].set_xlabel(r"$x (mm)$")
-    ax1[0].set_xlim([7.15, 8.75])
-    ax1[0].invert_xaxis()
-    ax1[0].set_ylabel(r"$Fraction$")
-    ax1[0].grid(True)
-    ax1[0].legend()
+    ax1[0,1].set_title('Fractions')
+    ax1[0,1].set_xlabel(r"$x (mm)$")
+    ax1[0,1].set_xlim([7.2, 8.6])
+    #ax1[0,1].invert_xaxis()
+    ax1[0,1].set_ylabel(r"$Fraction$")
+    ax1[0,1].grid(True)
+    ax1[0,1].legend()
 
-    ax1[1].plot(r, t1_1,color='orangered',linewidth=2,linestyle='-',label='H')
-    ax1[1].fill_between(r,t1_1-std_t1_1,t1_1+std_t1_1,
+    ax1[1,0].scatter(r, t1_1,color='orangered', s=25, marker='o', label=r'$H^{+}$')
+    ax1[1,0].fill_between(r,t1_1-std_t1_1,t1_1+std_t1_1,
                 color='coral',        # fill color
                 alpha=0.2,           # transparency
                 edgecolor='tomato',    # outline color
@@ -217,8 +218,8 @@ def plot_117830_IAW(data):
                 linestyle='-',      # outline style (optional)
     )
     #ax1[1].plot(r, lp["Ti_ion-2"],color='mediumblue',linewidth=2,linestyle='-')
-    ax1[1].plot(r, t2_1,color='MediumSeaGreen',linewidth=2,linestyle='-',label='He2+')
-    ax1[1].fill_between(r,t2_1-std_t2_1,t2_1+std_t2_1,
+    ax1[1,0].scatter(r, t2_1,color='MediumSeaGreen', s=25, marker='o', label=r'$He^{2+}$')
+    ax1[1,0].fill_between(r,t2_1-std_t2_1,t2_1+std_t2_1,
                 color='MediumAquamarine',        # fill color
                 alpha=0.2,           # transparency
                 edgecolor='MediumSeaGreen',    # outline color
@@ -226,26 +227,26 @@ def plot_117830_IAW(data):
                 linestyle='-',      # outline style (optional)
     )
 
-    ax1[1].plot(r, t3_1,color='darkorchid',linewidth=2,linestyle='-',label='He+')
-    ax1[1].fill_between(r,t3_1-std_t3_1,t3_1+std_t3_1,
-                color='orchid',        # fill color
-                alpha=0.2,           # transparency
-                edgecolor='darkorchid',    # outline color
-                linewidth=1.5,       # outline width
-                linestyle='-',      # outline style (optional)
-    )
+    # ax1[1,0].plot(r, t3_1,color='darkorchid',linewidth=2,linestyle='-',label='He+')
+    # ax1[1,0].fill_between(r,t3_1-std_t3_1,t3_1+std_t3_1,
+    #             color='orchid',        # fill color
+    #             alpha=0.2,           # transparency
+    #             edgecolor='darkorchid',    # outline color
+    #             linewidth=1.5,       # outline width
+    #             linestyle='-',      # outline style (optional)
+    # )
 
-    ax1[1].set_title('Temperatures')
-    ax1[1].set_xlabel(r"$x (mm)$")
-    ax1[1].set_xlim([7.15, 8.75])
-    ax1[1].set_ylim([0.0, 0.6])
-    ax1[1].invert_xaxis()
-    ax1[1].set_ylabel(r"$T_{i} (keV)$")
-    ax1[1].grid(True)
-    ax1[1].legend()
+    ax1[1,0].set_title('Temperatures')
+    ax1[1,0].set_xlabel(r"$x (mm)$")
+    ax1[1,0].set_xlim([7.2, 8.6])
+    ax1[1,0].set_ylim([0.0, 1.0])
+    #ax1[1,0].invert_xaxis()
+    ax1[1,0].set_ylabel(r"$T_{i} (keV)$")
+    ax1[1,0].grid(True)
+    ax1[1,0].legend()
 
-    ax1[2].plot(r, v1_1,color='orangered',linewidth=2,linestyle='-',label='H')
-    ax1[2].fill_between(r,v1_1-std_v1_1,v1_1+std_v1_1,
+    ax1[1,1].scatter(r, v1_1,color='orangered', s=25, marker='o', label=r'$H^{+}$')
+    ax1[1,1].fill_between(r,v1_1-std_v1_1,v1_1+std_v1_1,
                 color='coral',        # fill color
                 alpha=0.2,           # transparency
                 edgecolor='tomato',    # outline color
@@ -253,8 +254,8 @@ def plot_117830_IAW(data):
                 linestyle='-',      # outline style (optional)
     )
     #ax1[2].plot(r, lp["Va_ion-2"],color='mediumblue',linewidth=2,linestyle='-')
-    ax1[2].plot(r, v2_1,color='MediumSeaGreen',linewidth=2,linestyle='-',label='He2+')
-    ax1[2].fill_between(r,v2_1-std_v2_1,v2_1+std_v2_1,
+    ax1[1,1].scatter(r, v2_1,color='MediumSeaGreen', s=25, marker='o', label=r'$He^{2+}$')
+    ax1[1,1].fill_between(r,v2_1-std_v2_1,v2_1+std_v2_1,
                 color='MediumAquamarine',        # fill color
                 alpha=0.2,           # transparency
                 edgecolor='MediumSeaGreen',    # outline color
@@ -262,20 +263,20 @@ def plot_117830_IAW(data):
                 linestyle='-',      # outline style (optional)
     )
 
-    ax1[2].plot(r, v3_1,color='darkorchid',linewidth=2,linestyle='-',label='He+')
-    ax1[2].fill_between(r,v3_1-std_v3_1,v3_1+std_v3_1,
-                color='orchid',        # fill color
-                alpha=0.2,           # transparency
-                edgecolor='darkorchid',    # outline color
-                linewidth=1.5,       # outline width
-                linestyle='-',      # outline style (optional)
-    )
+    # ax1[1,1].plot(r, v3_1,color='darkorchid',linewidth=2,linestyle='-',label='He+')
+    # ax1[1,1].fill_between(r,v3_1-std_v3_1,v3_1+std_v3_1,
+    #             color='orchid',        # fill color
+    #             alpha=0.2,           # transparency
+    #             edgecolor='darkorchid',    # outline color
+    #             linewidth=1.5,       # outline width
+    #             linestyle='-',      # outline style (optional)
+    # )
 
     #ax1[2].plot(r, bv,color='k',linewidth=2,linestyle='--')
-    ax1[2].set_title('Velocities')
-    ax1[2].set_xlabel(r"$x (mm)$")
-    ax1[2].set_xlim([7.15, 8.75])
-    ax1[2].invert_xaxis()
-    ax1[2].set_ylabel(r"$V_{i} (10^{6} cm/s)$")
-    ax1[2].grid(True)
-    ax1[2].legend()
+    ax1[1,1].set_title('Velocities')
+    ax1[1,1].set_xlabel(r"$x (mm)$")
+    ax1[1,1].set_xlim([7.2, 8.6])
+    #ax1[1,1].invert_xaxis()
+    ax1[1,1].set_ylabel(r"$V_{i} (10^{6} cm/s)$")
+    ax1[1,1].grid(True)
+    ax1[1,1].legend()

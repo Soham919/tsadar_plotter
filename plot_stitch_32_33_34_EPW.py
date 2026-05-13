@@ -11,13 +11,21 @@ from TS_aux import shot_data
 
 def plot_stitch_32_33_34_EPW(data):
     ### PLOT STITCHED H2 SHOCKS ###
-    im1 = data['92532']['learned_parameters (1).csv']
-    im2 = data['92533']['learned_parameters (1).csv']
-    im3 = data['92534']['92534_4_nersc.csv']
+    im1 = data['92532']['92532-31']['learned_parameters.csv']
+    im2 = data['92533']['92533-37']['learned_parameters.csv']
+    im3 = data['92534']['92534-10']['learned_parameters.csv']
     magI = 2.87
     r1 = shot_data.loc[92532,"pointing"] - im1["Radius (\\mum)"]/10**3  # convert to mm and shift 
     r2 = shot_data.loc[92533,"pointing"] - im2["Radius (\\mum)"]/10**3 
     r3 = shot_data.loc[92534,"pointing"] - im3["Radius (\\mum)"]/10**3
+    print("r1 full range:", r1.min(), r1.max())
+    print("r2 full range:", r2.min(), r2.max())
+    print("r3 full range:", r3.min(), r3.max())
+
+    ## --- set masks --- ##
+    mask1 = (r1 > 3.5) & (r1 < 5.0) # np.ones_like(r1, dtype=bool)
+    mask2 = (r2 > 4.6) & (r2 < 5.4) # np.ones_like(r2, dtype=bool)
+    mask3 = (r3 < 3.5) & (r3 > 2.5) # np.ones_like(r3, dtype=bool)
     ## Ti, Va, fract plot for all 3 species 
     plt.rcParams.update({
     #    "font.family": "serif",             # pick font family
@@ -39,7 +47,7 @@ def plot_stitch_32_33_34_EPW(data):
     fig1, ax1  = plt.subplots(figsize=(16,13))
     # Error parameters
 
-    window = 3  # rolling window
+    window = 5  # rolling window
     f1_1 = im1["Te_electron"].rolling(window=window).mean()
     f2_1 = im1["ne_electron"].rolling(window=window).mean()
     f1_2 = im2["Te_electron"].rolling(window=window).mean()
@@ -58,10 +66,15 @@ def plot_stitch_32_33_34_EPW(data):
     fig1, ax1  = plt.subplots(figsize=(7.5,5.9))
     c1 = "tab:red"
     c2 = "tab:blue"
-    l1, = ax1.plot(r1,f1_1,color=c1,linewidth=2,linestyle='-',label=r'$T_{e}$')
-    l2, = ax1.plot(r2,f1_2,color=c1,linewidth=2,linestyle='--',label=r'$T_{e}$')
-    l3, = ax1.plot(r3,f1_3,color=c1,linewidth=2,linestyle='-.',label=r'$T_{e}$')
-    ax1.fill_between(r1,f1_1-std_f1_1,f1_1+std_f1_1,
+    # l1, = ax1.plot(r1[mask1],f1_1[mask1],color=c1,linewidth=2,linestyle='-',label=r'$T_{e}$')
+    # l2, = ax1.plot(r2[mask2],f1_2[mask2],color=c1,linewidth=2,linestyle='--',label=r'$T_{e}$')
+    # l3, = ax1.plot(r3[mask3],f1_3[mask3],color=c1,linewidth=2,linestyle='-.',label=r'$T_{e}$')
+
+    l1 = ax1.scatter(r1[mask1],f1_1[mask1],color=c1, s=25, marker='o', label=r'$T_{e}$')
+    l2 = ax1.scatter(r2[mask2],f1_2[mask2],color=c1, s=25, marker='o', label=r'$T_{e}$')
+    l3 = ax1.scatter(r3[mask3],f1_3[mask3],color=c1, s=25, marker='o', label=r'$T_{e}$')
+
+    ax1.fill_between(r1[mask1],f1_1[mask1]-std_f1_1[mask1],f1_1[mask1]+std_f1_1[mask1],
                     color='LightCoral',        # fill color
                     alpha=0.2,           # transparency
                     edgecolor='IndianRed',    # outline color
@@ -69,7 +82,7 @@ def plot_stitch_32_33_34_EPW(data):
                     linestyle='-',      # outline style (optional)
                     label='±1σ band')
     
-    ax1.fill_between(r2,f1_2-std_f1_2,f1_2+std_f1_2,
+    ax1.fill_between(r2[mask2],f1_2[mask2]-std_f1_2[mask2],f1_2[mask2]+std_f1_2[mask2],
                     color='LightCoral',        # fill color
                     alpha=0.2,           # transparency
                     edgecolor='IndianRed',    # outline color
@@ -77,7 +90,7 @@ def plot_stitch_32_33_34_EPW(data):
                     linestyle='-',      # outline style (optional)
                     label='±1σ band')
 
-    ax1.fill_between(r3,f1_3-std_f1_3,f1_3+std_f1_3,
+    ax1.fill_between(r3[mask3],f1_3[mask3]-std_f1_3[mask3],f1_3[mask3]+std_f1_3[mask3],
                     color='LightCoral',        # fill color
                     alpha=0.2,           # transparency
                     edgecolor='IndianRed',    # outline color
@@ -89,8 +102,8 @@ def plot_stitch_32_33_34_EPW(data):
     #ax1[2].plot(r, bv,color='k',linewidth=2,linestyle='--')
     ax1.set_title('Electron density and temperature')
     ax1.set_xlabel(r"$x (mm)$")
-    #ax1.set_xlim([3.55, 4.75])
-    #ax1[1,1].set_ylim([0.22, 0.4])
+    ax1.set_xlim([2.5, 5.4])
+    ax1.set_ylim([0.0, 0.6])
     ax1.invert_xaxis()
     ax1.set_ylabel(r"$T_{e} (keV)$", color = c1)
     ax1.tick_params(axis='y', colors=c1)
@@ -101,22 +114,27 @@ def plot_stitch_32_33_34_EPW(data):
     #ax1[1,1].legend()
 
     ax2 = ax1.twinx()
-    l3, = ax2.plot(r1,f2_1,color=c2,linewidth=2,linestyle='-',label=r'$n_{e}$')
-    l4, = ax2.plot(r2,f2_2,color=c2,linewidth=2,linestyle='--',label=r'$n_{e}$')
-    l5, = ax2.plot(r3,f2_3,color=c2,linewidth=2,linestyle='-.',label=r'$n_{e}$')
-    ax2.fill_between(r1,f2_1-std_f2_1,f2_1+std_f2_1,color='DodgerBlue',        # fill color
+    # l3, = ax2.plot(r1[mask1],f2_1[mask1],color=c2,linewidth=2,linestyle='-',label=r'$n_{e}$')
+    # l4, = ax2.plot(r2[mask2],f2_2[mask2],color=c2,linewidth=2,linestyle='--',label=r'$n_{e}$')
+    # l5, = ax2.plot(r3[mask3],f2_3[mask3],color=c2,linewidth=2,linestyle='-.',label=r'$n_{e}$')
+
+    l3 = ax2.scatter(r1[mask1],f2_1[mask1],color=c2, s=25, marker='o', label=r'$n_{e}$')
+    l4 = ax2.scatter(r2[mask2],f2_2[mask2],color=c2, s=25, marker='o', label=r'$n_{e}$')
+    l5 = ax2.scatter(r3[mask3],f2_3[mask3],color=c2, s=25, marker='o', label=r'$n_{e}$')
+
+    ax2.fill_between(r1[mask1],f2_1[mask1]-std_f2_1[mask1],f2_1[mask1]+std_f2_1[mask1],color='DodgerBlue',        # fill color
                     alpha=0.2,           # transparency
                     edgecolor='RoyalBlue',    # outline color
                     linewidth=1.5,       # outline width
                     linestyle='-',      # outline style (optional)
                     label='±1σ band')
-    ax2.fill_between(r2,f2_2-std_f2_2,f2_2+std_f2_2,color='DodgerBlue',        # fill color
+    ax2.fill_between(r2[mask2],f2_2[mask2]-std_f2_2[mask2],f2_2[mask2]+std_f2_2[mask2],color='DodgerBlue',        # fill color
                     alpha=0.2,           # transparency
                     edgecolor='RoyalBlue',    # outline color
                     linewidth=1.5,       # outline width
                     linestyle='-',      # outline style (optional)
                     label='±1σ band')
-    ax2.fill_between(r3,f2_3-std_f2_3,f2_3+std_f2_3,color='DodgerBlue',        # fill color
+    ax2.fill_between(r3[mask3],f2_3[mask3]-std_f2_3[mask3],f2_3[mask3]+std_f2_3[mask3],color='DodgerBlue',        # fill color
                     alpha=0.2,
                     edgecolor='RoyalBlue',    # outline color
                     linewidth=1.5,       # outline width
@@ -124,6 +142,7 @@ def plot_stitch_32_33_34_EPW(data):
                     label='±1σ band')
 
     ax2.set_ylabel(r"$n_{e} (\times 10^{20} cm^{-3})$", color = c2)
+    ax2.set_ylim([0.1, 0.6])
     ax2.tick_params(axis='y', colors=c2)
     ax2.spines['right'].set_color(c2)
     ax2.spines['right'].set_linewidth(1.5)
@@ -133,6 +152,10 @@ def plot_stitch_32_33_34_EPW(data):
     lines = [l1, l3]
     labels = [line.get_label() for line in lines]
     ax1.legend(lines, labels, loc='upper right', frameon=False)
+
+    print("r1 masked range:", r1[mask1].min(), r1[mask1].max())
+    print("r2 masked range:", r2[mask2].min(), r2[mask2].max())
+    print("r3 masked range:", r3[mask3].min(), r3[mask3].max())
 
 
 

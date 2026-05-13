@@ -155,7 +155,7 @@ def get_calibration(shotNum,tstype):
     Returns:
     tuple: A tuple containing the x and y axis of the EPW and IAW spectrometers, respectively.
     '''
-
+    shotNum = int(shotNum)
     CCDsize = (1024, 1024)
     if shotNum in [92522,92525,92531,92532,92534,92537,92538]:
         EPWDisp = 0.27093
@@ -202,7 +202,25 @@ def get_calibration(shotNum,tstype):
         EPWtcc = 563 #1024 - 456.1  # 562;
         IAWtcc = 630 #519#1024 - 519  # 469;
 
+    elif 117830 <= shotNum <= 117839:
+        EPWDisp = 0.276
+        IAWDisp = 0.00437
+        EPWoff = 375.528  # needs to be checked
+        IAWoff = 524.189
+
+        #stddev["spect_stddev_ion"] = 0.028  # needs to be checked
+        #stddev["spect_stddev_ele"] = 1.4365  # needs to be checked
+
+        magI = 2.89  # um / px times strech factor accounting for tilt in view
+        magE = 5.13 # um / px times strech factor accounting for tilt in view
+
+        EPWtcc = 528  # 562;
+        IAWtcc = 475  # 469;
+
     ## Apply calibrations
+    axisx = np.arange(1, CCDsize[1] + 1)
+    axisxE = (axisx) * magE  # ps,um
+    axisxI = (axisx) * magI  # ps,um
     axisy = np.arange(1, CCDsize[0] + 1)
     axisyE = axisy * EPWDisp + EPWoff  # (nm)
     axisyI = axisy * IAWDisp + IAWoff  # (nm)
