@@ -7,6 +7,7 @@ import yt
 from flash_helpers import *
 from scipy import constants
 from plotFLASH1d_profiles import *
+import os
 
 eps = constants.epsilon_0 # epislon naught SI
 kb = constants.Boltzmann # Boltzmann constant SI
@@ -26,9 +27,21 @@ A2 = 28 # Si
 baseDir = Path().resolve().parent
 
 # --------- Mac ------------
-runDir = baseDir / ".." / "Flash" / "test_runs" / "1D_power_test"
-file = "ks_hdf5_plt_cnt_0050"
-fp = runDir / file
+# runDir = baseDir / ".." / "Flash" / "test_runs" / "1D_power_test"
+# file = "ks_hdf5_plt_cnt_0050"
+# fp = runDir / file
+
+# --------- Windows ------------
+runDir = baseDir / "FLASH" / "1D" / "1mm_spot" / "1D_Si_0.5TW_long"
+
+target_time_ns = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5,
+                  5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]  # ns
+
+files_info = find_nearest_flash_file_from_table(
+    target_time_ns,
+    runDir,
+    time_table="flash_plotfile_times.txt"
+)
 
 # Plot mode:
 #   "auto" -> detect 1D or 2D
@@ -38,11 +51,11 @@ plotMode = "auto"
 
 # For 1D plots
 fields1D = [
-    "dens"
-    "depo"
-    "tele"
-    "tion"
-    "trad"
+    "dens",
+    "depo",
+    "tele",
+    "tion",
+    "trad",
     "cham",
     "targ",
     "gas",
@@ -55,40 +68,68 @@ field2D = "dens"
 useMicrons = True
 
 # Save plots?
-savePlots = False
+savePlots = True
 saveDir = runDir / "plots"
 saveDir.mkdir(parents=True, exist_ok=True)
 
+# Ray option
+rays = False
+xlims = None
 
 
 # ============================================================
-# Main script
+# Main loop over requested times
 # ============================================================
 
-ds = yt.load(fp)
-ad = ds.all_data()
+for filename, file_num, matched_time_s, matched_time_ns in files_info:
 
-sim_time_ns = get_sim_time_ns(ds)
+    fp = filename
 
-print("current_time =", ds.current_time)
-print(f"time = {sim_time_ns:.4f} ns")
+    print("\n" + "=" * 70)
+    print(f"Loading file number {file_num}")
+    print(f"File: {fp}")
+    print(f"Matched time = {matched_time_ns:.4f} ns")
+    print("=" * 70)
 
-print_fields(ds, ad)
+    ds = yt.load(fp)
+    ad = ds.all_data()
 
-cg, dims = get_covering_grid(ds)
+    sim_time_ns = get_sim_time_ns(ds)
 
-# ============================================================
-# Plot 1D
-# ============================================================
-rays = True
-if rays == True:
-    ray_data = read_flash_rays(fp)
+    print("current_time =", ds.current_time)
+    print(f"time = {sim_time_ns:.4f} ns")
 
-xlims = [150,300]
-#plot_1d_profiles(ds, fields1D, useMicrons, savePlots, saveDir, fp, rays)
-plotFLASH1d_profiles(ds, cg, dims,xlims = xlims, ray_data= ray_data)
+    print_fields(ds, ad)
 
+    cg, dims = get_covering_grid(ds)
 
+    # ============================================================
+    # Read rays if needed
+    # ============================================================
+    if rays:
+        ray_data = read_flash_rays(fp)
+    else:
+        ray_data = None
+
+    # ============================================================
+    # Plot 1D
+    # ============================================================
+
+    fig, axes = plotFLASH1d_profiles(
+    ds,
+    cg,
+    dims,
+    xlims=xlims,
+    ray_data=ray_data
+)
+
+    if savePlots:
+        save_name = saveDir / f"FLASH_1D_profiles_t_{sim_time_ns:.3f}_ns.png"
+        fig.savefig(save_name, dpi=300, bbox_inches="tight")
+        print(f"Saved: {save_name}")
+
+    plt.close(fig)
+    
 # tags = ray_data[:, 0]
 
 # unique_tags, counts = np.unique(tags, return_counts=True)

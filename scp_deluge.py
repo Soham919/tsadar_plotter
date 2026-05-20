@@ -4,9 +4,15 @@ from pathlib import Path
 # -------- user settings --------
 username = "sban"
 host = "cl7head"
-remote_dir = "/home/sban/FLASH4.7.1/1D_power_test"
-file_pattern = "*hdf5_plt_cnt*"          # examples: "*.h5", "*.png", "*.txt"
-local_dir = "/Users/soham/Documents/Flash/test_runs/1D_power_test"
+
+#remote_dir = "/home/sban/FLASH4.7.1/ks_resolve1um"
+remote_dir = "/g1/hdd/sban/FLASH_runs/1mm_spot/1D_Si_0.5TW_long/"
+file_pattern = "*hdf5_plt_cnt_*"          # examples: "*.h5", "*.png", "*.txt"
+# ---- Mac ---- #
+#local_dir = "/Users/soham/Documents/Flash/test_runs/1D_power_test"
+
+# ---- Windows ---- #
+local_dir = "//profiles/Users$/sban/Documents/FLASH/1D/1mm_spot/1D_Si_0.5TW_long"
 # -------------------------------
 
 def scp_copy_files(username, host, remote_dir, file_pattern, local_dir):

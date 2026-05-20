@@ -84,7 +84,11 @@ def omg_p(ne):
     omg = ((ne*(e**2))/(me*eps))**(0.5)
     return omg
 
-
+def cs(m, Z, Te):
+    m = m*mp
+    Te = e*Te
+    speed = ((5/3)*Z*Te/m)**(0.5)
+    return speed
 
 def col_t_ii(mi, mj, Ti, nj, Zi, Zj):
     """

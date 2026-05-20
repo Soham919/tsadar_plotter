@@ -19,7 +19,7 @@ A1 = 1 # H Gas
 A2 = 28 # Si Targ
 A3 = 4 # He cham
 
-def plotFLASH1d_profiles(ds, cg, dims=None, xlims = None, useMicrons=True, ray_data=None):
+def plotFLASH1d_profiles(ds, cg, dims=None, xlims=None, useMicrons=True, ray_data=None):
     sim_time_ns = get_sim_time_ns(ds)
 
     # ---- get raw data ---- #
@@ -47,8 +47,43 @@ def plotFLASH1d_profiles(ds, cg, dims=None, xlims = None, useMicrons=True, ray_d
     x0 = float(ds.domain_left_edge[0])
     x1 = float(ds.domain_right_edge[0])
 
-    x_cm = np.linspace(x0, x1, nx)
+    x_cm = np.linspace(x0, x1, nx, endpoint=False)
+    dx = (x1 - x0) / nx
+    x_cm = x_cm + 0.5 * dx
     x_plot, xlabel = coord_to_plot_units(x_cm, useMicrons)
+
+    # ---- quick check: is laser deposition nonzero near chosen x? ---- #
+    check_x_um = 3600.0   # choose x location in microns
+    tol = 1e-30          # tolerance for "nonzero"
+
+    RED = "\033[91m"
+    RESET = "\033[0m"
+
+    if useMicrons:
+        x_for_check = x_plot
+    else:
+        x_for_check, _ = coord_to_plot_units(x_cm, True)
+
+    ix_check = np.argmin(np.abs(x_for_check - check_x_um))
+    val_check = las_depo[ix_check]
+
+    if abs(val_check) > tol:
+        print(RED +
+            f"Laser deposition is NONZERO near x = {check_x_um:.3g} um "
+            f"(nearest x = {x_for_check[ix_check]:.3g} um, value = {val_check:.3e} J/cm^3)"
+            + RESET)
+    else:
+        print(RED +
+            f"Laser deposition is zero near x = {check_x_um:.3g} um "
+            f"(nearest x = {x_for_check[ix_check]:.3g} um, value = {val_check:.3e} J/cm^3)"
+            + RESET)
+    #------------------------------------------------------------------ #
+
+    # Decide plot x-limits once, using hydro x-axis if xlims is not passed
+    if xlims is None:
+        plot_xlims = (np.nanmin(x_plot), np.nanmax(x_plot))
+    else:
+        plot_xlims = xlims
 
     # ---- figure ---- #
     fig, (ax, ax_ray) = plt.subplots(
@@ -67,10 +102,10 @@ def plotFLASH1d_profiles(ds, cg, dims=None, xlims = None, useMicrons=True, ray_d
     l2, = ax.plot(x_plot, ne, lw=2, color=c1, label=r"$n_e$")
 
     ax.set_ylabel(r"$n$ [$cm^{-3}$]")
+    ax.set_xlabel(xlabel)
     ax.set_title(f"FLASH 1D Density + Laser, t = {sim_time_ns:.3f} ns")
     ax.grid(True, alpha=0.3)
-    if xlims is not None:
-        ax.set_xlim(xlims)
+    ax.set_xlim(plot_xlims)
 
     ax2 = ax.twinx()
     c2 = "blueviolet"
@@ -84,11 +119,11 @@ def plotFLASH1d_profiles(ds, cg, dims=None, xlims = None, useMicrons=True, ray_d
     )
 
     ax2.set_ylabel(r"$E_{dep}$ [J/cm$^3$]", color=c2)
+    #ax2.set_ylim([0,10])
     ax2.tick_params(axis="y", colors=c2)
     ax2.spines["right"].set_color(c2)
     ax2.spines["right"].set_linewidth(1.5)
-    if xlims is not None:
-        ax2.set_xlim(xlims)
+    ax2.set_xlim(plot_xlims)
 
     lines = [l1, l2, l3]
     labels = [line.get_label() for line in lines]
@@ -97,14 +132,18 @@ def plotFLASH1d_profiles(ds, cg, dims=None, xlims = None, useMicrons=True, ray_d
     # =========================
     # Bottom subplot: ray power
     # =========================
-    if ray_data is not None:
+
+    # Treat empty arrays the same as no ray_data
+    has_ray_data = ray_data is not None and len(ray_data) > 0
+
+    if has_ray_data:
         tags = ray_data[:, 0].astype(int)
         unique_tags = np.unique(tags)
 
         for tag in unique_tags:
             r = ray_data[tags == tag]
 
-            ray_x_cm = r[:, 1]          # column 1 = x
+            ray_x_cm = r[:, 1]            # column 1 = x
             ray_power_W = r[:, 4] * 1e-7  # erg/s -> W
 
             # sort by x-position
@@ -123,29 +162,34 @@ def plotFLASH1d_profiles(ds, cg, dims=None, xlims = None, useMicrons=True, ray_d
                 label=f"ray {tag}"
             )
 
-        ax_ray.set_ylabel("Ray power [W]")
-        ax_ray.grid(True, alpha=0.3)
-        if xlims is not None:
-            ax_ray.set_xlim(xlims)
-
         if len(unique_tags) > 1:
             ax_ray.legend(frameon=False, loc="best")
 
     else:
         ax_ray.text(
             0.5, 0.5,
-            "No RayData passed",
+            "No Ray Data passed",
             transform=ax_ray.transAxes,
             ha="center",
             va="center"
         )
-        ax_ray.set_ylabel("Ray power [W]")
-        ax_ray.grid(True, alpha=0.3)
 
+        # Optional: keep bottom panel from looking totally empty
+        ax_ray.set_ylim(0, 1)
+
+    ax_ray.set_ylabel("Ray power [W]")
     ax_ray.set_xlabel(xlabel)
-    
-    ax2.set_ylim([0,50])
-    plt.tight_layout()
+    ax_ray.grid(True, alpha=0.3)
+
+    # Important: force shared x-axis limits even when there is no ray data
+    ax_ray.set_xlim(plot_xlims)
+
+    # Make sure x tick labels show on the top plot too, despite sharex=True
+    ax.tick_params(axis="x", labelbottom=True)
+
+    # ax.set_ylim([0, 1e21])
+    # ax2.set_ylim([0, 1])
+    fig.tight_layout()
     plt.show()
 
     return fig, (ax, ax2, ax_ray)

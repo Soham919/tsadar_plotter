@@ -4,10 +4,189 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm, Normalize
 from pathlib import Path
 import yt
+import glob
+import os
+import re
 
 # ============================================================
 # Helper functions
 # ============================================================
+
+def get_flash_sim_time(filename):
+    """
+    Read FLASH simulation time directly from HDF5 metadata.
+    Returns time in seconds.
+    """
+    with h5py.File(filename, "r") as f:
+        real_scalars = f["real scalars"][:]
+
+        for row in real_scalars:
+            name = row[0]
+            value = row[1]
+
+            if isinstance(name, bytes):
+                name = name.decode("utf-8").strip()
+            else:
+                name = str(name).strip()
+
+            if name == "time":
+                return float(value)
+
+    raise ValueError(f"No time entry found in {filename}")
+
+
+def get_file_number(filename):
+    """
+    Extract number from something like:
+    ks_hdf5_plt_cnt_0042
+    """
+    match = re.search(r"plt_cnt_(\d+)", os.path.basename(filename))
+    if match:
+        return int(match.group(1))
+    return -1
+
+
+def make_flash_time_table(
+    fp,
+    file_pattern="*plt_cnt_*",
+    output_txt="flash_plotfile_times.txt"
+):
+    """
+    Scan FLASH plot files once and save file number/time mapping.
+    Does NOT use os.chdir().
+    """
+
+    import os
+    import glob
+
+    search_pattern = os.path.join(fp, file_pattern)
+    output_path = os.path.join(fp, output_txt)
+
+    files = sorted(
+        glob.glob(search_pattern),
+        key=get_file_number
+    )
+
+    if len(files) == 0:
+        raise FileNotFoundError(f"No files found matching pattern: {search_pattern}")
+
+    rows = []
+
+    for file in files:
+        try:
+            file_num = get_file_number(file)
+            sim_time_s = get_flash_sim_time(file)
+            sim_time_ns = sim_time_s * 1e9
+
+            # Save only the filename, not the full path
+            filename_only = os.path.basename(file)
+
+            rows.append((file_num, sim_time_s, sim_time_ns, filename_only))
+
+            print(
+                f"{file_num:05d}  "
+                f"{sim_time_s:.12e} s  "
+                f"{sim_time_ns:.6f} ns  "
+                f"{filename_only}"
+            )
+
+        except Exception as e:
+            print(f"Skipping {file}: {e}")
+
+    if len(rows) == 0:
+        raise RuntimeError("No valid FLASH plot files found.")
+
+    with open(output_path, "w") as f:
+        f.write("# file_number sim_time_s sim_time_ns filename\n")
+
+        for file_num, sim_time_s, sim_time_ns, filename in rows:
+            f.write(
+                f"{file_num:d} "
+                f"{sim_time_s:.12e} "
+                f"{sim_time_ns:.12e} "
+                f"{filename}\n"
+            )
+
+    print(f"\nSaved time table to: {output_path}")
+
+    return rows
+
+
+def find_nearest_flash_file_from_table(
+    target_time_ns,
+    fp,
+    time_table="flash_plotfile_times.txt",
+):
+    """
+    Find nearest FLASH plot file(s) using precomputed time table.
+
+    target_time_ns can be:
+      - a single number, like 1.0
+      - a list/array, like [0.5, 1.0, 1.5]
+    """
+
+    import os
+    import numpy as np
+
+    table_path = os.path.join(fp, time_table)
+
+    file_numbers = []
+    sim_times_s = []
+    sim_times_ns = []
+    filenames = []
+
+    with open(table_path, "r") as f:
+        for line in f:
+            if line.strip().startswith("#") or len(line.strip()) == 0:
+                continue
+
+            parts = line.split()
+
+            file_numbers.append(int(parts[0]))
+            sim_times_s.append(float(parts[1]))
+            sim_times_ns.append(float(parts[2]))
+
+            # Return full path to file
+            filenames.append(os.path.join(fp, parts[3]))
+
+    sim_times_s = np.array(sim_times_s)
+    sim_times_ns = np.array(sim_times_ns)
+    file_numbers = np.array(file_numbers)
+
+    # Detect whether input is scalar or array-like
+    input_is_scalar = np.isscalar(target_time_ns)
+    target_times_ns = np.atleast_1d(target_time_ns)
+
+    results = []
+
+    for t_ns in target_times_ns:
+        idx = np.argmin(np.abs(sim_times_ns - t_ns))
+
+        nearest_file = filenames[idx]
+        nearest_file_number = file_numbers[idx]
+        nearest_time_s = sim_times_s[idx]
+        nearest_time_ns = sim_times_ns[idx]
+
+        print("Requested time:")
+        print(f"  {t_ns:.6f} ns")
+
+        print("Nearest FLASH plot file:")
+        print(f"  file name   = {nearest_file}")
+        print(f"  file number = {nearest_file_number}")
+        print(f"  sim time    = {nearest_time_ns:.6f} ns")
+        print(f"  difference  = {abs(nearest_time_ns - t_ns):.6f} ns")
+        print()
+
+        results.append(
+            (nearest_file, nearest_file_number, nearest_time_s, nearest_time_ns)
+        )
+
+    # Preserve old behavior for a single input
+    if input_is_scalar:
+        return results[0]
+
+    return results
+
 
 def get_sim_time_ns(ds):
     """
@@ -35,14 +214,35 @@ def print_fields(ds, ad):
 
 def get_covering_grid(ds):
     """
-    Returns max-level covering grid and dimensions.
+    Returns max-level covering grid and dimensions,
+    avoiding fake FLASH dimensions for 1D/2D runs.
     """
     level = ds.index.max_level
-    dims = ds.domain_dimensions * (2 ** level)
+    base_dims = np.array(ds.domain_dimensions, dtype=int)
+    refined_dims = base_dims * (2 ** level)
+
+    plot_dim = detect_plot_dim_from_ds(ds)
+
+    dims = np.ones(3, dtype=int)
+
+    if plot_dim == "1d":
+        dims[0] = refined_dims[0]
+
+    elif plot_dim == "2d":
+        dims[0] = refined_dims[0]
+        dims[1] = refined_dims[1]
+
+    elif plot_dim == "3d":
+        dims = refined_dims
+
+    else:
+        raise ValueError(f"Unknown plot_dim: {plot_dim}")
 
     print("max level:", level)
     print("domain_dimensions:", ds.domain_dimensions)
-    print("covering grid dims:", dims)
+    print("detected plot_dim:", plot_dim)
+    print("raw refined dims:", refined_dims)
+    print("safe covering grid dims:", dims)
 
     cg = ds.covering_grid(
         level=level,
