@@ -33,10 +33,10 @@ runDir = baseDir / ".." / "Flash" / "test_runs" / "10um_spot_2"
 # fp = runDir / file
 
 # --------- Windows ------------
-# runDir = baseDir / "FLASH" / "1D" / "1mm_spot" / "1D_Si_0.5TW_long"
+runDir = baseDir / "FLASH" / "1D" / "1mm_spot" / "1D_1um_resolve"
 
-target_time_ns = [0, 0.02, 0.4, 0.6, 0.8, 0.1, 0.12, 0.14, 0.16,
-                  0.18, 0.2, 0.22, 0.24, 0.26, 0.28, 0.3, 0.32]  # ns
+target_time_ns = [0.1, 0.2, 0.3, 0.31, 0.32, 0.33, 0.34, 0.35, 0.4, 0.5, 0.6, 0.7, 0.8, 1,
+1.5, 2,2.5, 3,3.5, 4,4.5, 5,5.5, 6,6.5, 7,7.5, 8,8.5, 9]  # ns
 
 files_info = find_nearest_flash_file_from_table(
     target_time_ns,
