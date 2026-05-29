@@ -444,6 +444,7 @@ if __name__ == "__main__":
     # ax.set_title(r"Scattering parameter $\alpha = \frac{1}{k\lambda_D}$")
     # plt.colorbar(im, label=r'$\alpha$', ax=ax)
     # plt.show()
+    r = 5e-5
+    print(1e12/(pi*(r**2)*c*(eps)))
 
-    print(nc(351))
-
+    

@@ -511,3 +511,4 @@ def plot_rays(ax, ray_data, xscale=1.0, yscale=1.0, color="w", lw=1.0):
         y = this_ray[:, 2] * yscale
 
         ax.plot(x, y, color=color, lw=lw, alpha=0.8)
+

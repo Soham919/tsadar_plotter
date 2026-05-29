@@ -13,21 +13,44 @@ u2 = np.gradient(tw2, t)
 u1 = np.gradient(tw1, t)
 u05 = np.gradient(tw05, t)
 
+# 2D 3TW data (1um resolve) for comparison
+t2D = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
+e3 = np.array([200, 220, 240, 270, 340, 490, 630, 790, 940, 1090, 1220, 1840, 2350, 2820, 3230, 3620, np.nan, np.nan, np.nan]) 
+e2 = np.array([200, 205, 218, 245, 295, 389, 502, 608, 702, 800, 890, 1230, 1520, 1770, 1990, 2190, 2370, 2550, 2730])
+e1 = np.array([200, 210, 230, 240, 330, 400, 450, 510, 560, 600, 650, 830, 980, 1120, 1240, 1370, 1480, 1580, 1700 ]) 
+compare_1d_2d = np.array([200, 220, 240, 320, 410, 490, 670, 870, 950, 1140, 1330, 1990, 2630, 3210, 3860, 4420, 4890, 5460, 6030])
+ue3 = np.gradient(e3, t2D)
+ue2 = np.gradient(e2, t2D)
+ue1 = np.gradient(e1, t2D)
+u1d2d = np.gradient(compare_1d_2d, t2D)
+
+
 fig, ax = plt.subplots(figsize=(8, 5))
-ax.plot(t, tw05, marker="o", label="0.5 TW")
-ax.plot(t, tw1, marker="o", label="1 TW")
-ax.plot(t, tw2, marker="o", label="2 TW")
-ax.plot(t, tw3, marker="o", label="3 TW")
-ax.plot(t, tw3_1d_1um_resolve, marker="o", label="3 TW - 1um resolve")   
+# ax.plot(t, tw05, marker="o", label="0.5 TW")
+# ax.plot(t, tw1, marker="o", label="1 TW")
+# ax.plot(t, tw2, marker="o", label="2 TW")
+# ax.plot(t, tw3, marker="o", label="3 TW")
+# ax.plot(t, tw3_1d_1um_resolve, marker="o", label="3 TW - 1um resolve")   
 
 # ax.plot(t, u05, marker="o", label="0.5 TW")
 # ax.plot(t, u1, marker="o", label="1 TW")
 # ax.plot(t, u2, marker="o", label="2 TW")
 # ax.plot(t, u3, marker="o", label="3 TW")   
 
+# 2D data
+# ax.plot(t2D, e1, marker="o", label="10um 3TW - 2D")
+# ax.plot(t2D, e2, marker="o", label="100um 3TW - 2D")
+# ax.plot(t2D, e3, marker="o", label="1000um 3TW - 2D")
+# ax.plot(t2D, compare_1d_2d, marker="o", label="3TW - 1D")
+
+ax.plot(t2D, ue1, marker="o", label="10um 3TW - 2D")
+ax.plot(t2D, ue2, marker="o", label="100um 3TW - 2D")
+ax.plot(t2D, ue3, marker="o", label="1000um 3TW - 2D")
+ax.plot(t2D, u1d2d, marker="o", label="3TW - 1D")
+
 ax.legend()
 ax.set_xlabel("Time (ns)")
-ax.set_ylabel("Shock front speed (mm/ns)")
-plt.title("Shock front speed vs time for different laser powers")
+ax.set_ylabel("Shock speed (mm)")
+plt.title("Shock front speed vs time for different laser spot sizes")
 ax.grid(True, alpha=0.3)
 plt.show()

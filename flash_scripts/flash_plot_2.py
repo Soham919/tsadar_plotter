@@ -28,15 +28,14 @@ A2 = 28 # Si
 baseDir = Path().resolve().parent
 
 # --------- Mac ------------
-runDir = baseDir / ".." / "Flash" / "test_runs" / "10um_spot_2"
+# runDir = baseDir / ".." / "Flash" / "test_runs" / "10um_spot_2"
 # file = "ks_hdf5_plt_cnt_0050"
 # fp = runDir / file
 
 # --------- Windows ------------
-runDir = baseDir / "FLASH" / "1D" / "1mm_spot" / "1D_1um_resolve"
+runDir = Path(r"C:\Simulation_data\FLASH\2D\1mm_spot_Si_2")
 
-target_time_ns = [0.1, 0.2, 0.3, 0.31, 0.32, 0.33, 0.34, 0.35, 0.4, 0.5, 0.6, 0.7, 0.8, 1,
-1.5, 2,2.5, 3,3.5, 4,4.5, 5,5.5, 6,6.5, 7,7.5, 8,8.5, 9]  # ns
+target_time_ns = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,2.5,3,3.5]  # ns
 
 files_info = find_nearest_flash_file_from_table(
     target_time_ns,
@@ -102,16 +101,14 @@ for filename, file_num, matched_time_s, matched_time_ns in files_info:
 
     # fig, axes = plotFLASH1d_profiles(
     #     ds,
-    #     cg,
-    #     dims,
+    #     field="dens",
+    #     fp=fp,
     #     xlims=xlims,
+    #     useMicrons=useMicrons,
+    #     savePlots=savePlots,
+    #     saveDir=saveDir,
     #     ray_data=ray_data
     # )
-
-    # if savePlots:
-    #     save_name = saveDir / f"FLASH_1D_profiles_t_{sim_time_ns:.3f}_ns.png"
-    #     fig.savefig(save_name, dpi=300, bbox_inches="tight")
-    #     print(f"Saved: {save_name}")
 
     # plt.close(fig)
 
@@ -138,27 +135,27 @@ for filename, file_num, matched_time_s, matched_time_ns in files_info:
     # Ray diagnostics
     # ============================================================
 
-    if rays and ray_data is not None:
-        tags = ray_data[:, 0]
+    # if rays and ray_data is not None:
+    #     tags = ray_data[:, 0]
 
-        unique_tags, counts = np.unique(tags, return_counts=True)
+    #     unique_tags, counts = np.unique(tags, return_counts=True)
 
-        print("Number of rays:", len(unique_tags))
+    #     print("Number of rays:", len(unique_tags))
 
-        ray_initial_power_W = []
+    #     ray_initial_power_W = []
 
-        for tag in unique_tags:
-            r = ray_data[tags == tag]
-            ray_initial_power_W.append(r[0, 4] * 1e-7)
+    #     for tag in unique_tags:
+    #         r = ray_data[tags == tag]
+    #         ray_initial_power_W.append(r[0, 4] * 1e-7)
 
-        ray_initial_power_W = np.array(ray_initial_power_W)
+    #     ray_initial_power_W = np.array(ray_initial_power_W)
 
-        print("Total initial laser power TW:", ray_initial_power_W.sum() / 1e12)
-        print(
-            "Initial power per ray W min/max:",
-            ray_initial_power_W.min(),
-            ray_initial_power_W.max()
-        )
+    #     print("Total initial laser power TW:", ray_initial_power_W.sum() / 1e12)
+    #     print(
+    #         "Initial power per ray W min/max:",
+    #         ray_initial_power_W.min(),
+    #         ray_initial_power_W.max()
+    #     )
 # ============================================================
 # Plot everything one by one
 # ============================================================

@@ -40,7 +40,7 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
     Bottom: 1D lineout of ni, ne, and laser deposition.
 
     Speed changes:
-      - Uses imshow for the 2D image.
+      - Uses imshow instead of pcolormesh for the 2D image.
       - Avoids creating large 2D coordinate meshgrids.
       - Downsamples only the displayed 2D image if it is very large.
       - Does not load tele/tion unless the temperature-lineout toggle is enabled.
@@ -60,11 +60,11 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
     max_plot_pixels = 1200
 
     # imshow is much faster than pcolormesh for regularly spaced grids.
+    use_fast_imshow = True
 
     # Keep this False unless you actually want the Te/Ti lineout section.
     # Loading tele/tion can be expensive for large FLASH files.
     plot_temperature_lineout = False
-    plot_velocity_lineout = False
 
     # Save speed/size knob
     save_dpi = 150
@@ -88,10 +88,9 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
     if plot_temperature_lineout:
         tele2d = get_field_array(cg, "flash", "tele")[:, :, 0]
         tion2d = get_field_array(cg, "flash", "tion")[:, :, 0]
-    elif plot_velocity_lineout:
-        velx2d = get_field_array(cg, "flash", "velx")[:, :, 0]
-        vely2d = get_field_array(cg, "flash", "vely")[:, :, 0]
-        
+    else:
+        tele2d = None
+        tion2d = None
 
     print(f"{field} 2D shape:", arr2d.shape)
     print(f"{field} min/max:", np.nanmin(arr2d), np.nanmax(arr2d))
@@ -160,9 +159,6 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
         if plot_temperature_lineout:
             tele = tele2d[:, idx]
             tion = tion2d[:, idx]
-        elif plot_velocity_lineout:
-            velx = velx2d[:, idx]
-            vely = vely2d[:, idx]
 
         line_location = y_centers[idx]
         line_title = rf"Lineout vs $x$ at $y = {line_location:.3f}$ {coord_unit}"
@@ -184,9 +180,6 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
         if plot_temperature_lineout:
             tele = tele2d[idx, :]
             tion = tion2d[idx, :]
-        elif plot_velocity_lineout:
-            velx = velx2d[idx, :]
-            vely = vely2d[idx, :]
 
         line_location = x_centers[idx]
         line_title = rf"Lineout vs $y$ at $x = {line_location:.3f}$ {coord_unit}"
@@ -211,29 +204,6 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
     ne = ye * dens / mp_g
 
     las_depo = dens * depo * 1e-7
-
-    # ---- quick check: is laser deposition nonzero near chosen x? ---- #
-    check_x_um = 1000.0   # choose x location in microns
-    tol = 1e-30          # tolerance for "nonzero"
-
-    RED = "\033[91m"
-    RESET = "\033[0m"
-
-    ix_check = np.argmin(np.abs(coord_plot - check_x_um))
-    val_check = las_depo[ix_check]
-
-    if abs(val_check) > tol:
-        print(RED +
-            f"Laser deposition is NONZERO near x = {check_x_um:.3g} um "
-            f"(nearest x = {coord_plot[ix_check]:.3g} um, value = {val_check:.3e} J/cm^3)"
-            + RESET)
-    else:
-        print(RED +
-            f"Laser deposition is zero near x = {check_x_um:.3g} um "
-            f"(nearest x = {coord_plot[ix_check]:.3g} um, value = {val_check:.3e} J/cm^3)"
-            + RESET)
-    #------------------------------------------------------------------ #
-
 
     # ============================================================
     # Rays for 2D overlay only
@@ -278,23 +248,39 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
     # columns = old y
     arr_img = arr2d[::-1, :]
 
-    arr_img_plot, display_stride = _auto_downsample_2d(arr_img, max_pixels=max_plot_pixels)
+    if use_fast_imshow:
+        arr_img_plot, display_stride = _auto_downsample_2d(arr_img, max_pixels=max_plot_pixels)
 
-    if display_stride > 1:
-        print(
-            f"Display downsampling enabled: showing every {display_stride}th cell "
-            f"for 2D image only. Lineout remains full resolution."
+        if display_stride > 1:
+            print(
+                f"Display downsampling enabled: showing every {display_stride}th cell "
+                f"for 2D image only. Lineout remains full resolution."
+            )
+
+        pcm = ax2d.imshow(
+            arr_img_plot,
+            extent=[y_edges[0], y_edges[-1], x_edges[0], x_edges[-1]],
+            origin="upper",
+            aspect="equal",
+            interpolation="nearest",
+            cmap="plasma",
+            norm=norm
         )
 
-    pcm = ax2d.imshow(
-        arr_img_plot,
-        extent=[y_edges[0], y_edges[-1], x_edges[0], x_edges[-1]],
-        origin="upper",
-        aspect="equal",
-        interpolation="nearest",
-        cmap="plasma",
-        norm=norm
-    )
+    else:
+        # Slower fallback. Useful only if you truly need pcolormesh cell edges.
+        arr2d_rot = arr2d.T[:, ::-1]
+        Xrot, Yrot = np.meshgrid(y_edges, x_edges[::-1], indexing="ij")
+        pcm = ax2d.pcolormesh(
+            Xrot,
+            Yrot,
+            arr2d_rot,
+            shading="auto",
+            cmap="plasma",
+            norm=norm,
+            rasterized=True
+        )
+        ax2d.set_aspect("equal")
 
     if rays and ray_data is not None:
         plot_rays(
@@ -337,21 +323,14 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
     l2, = ax1d.plot(coord_plot, ne, lw=2, color=c1, label=r"$n_e$")
 
     # Optional Te/Ti plotting block. Turn plot_temperature_lineout=True above.
-    if plot_temperature_lineout:
-        tele_keV = tele * 1e-3
-        tion_keV = tion * 1e-3
-        l1.set_ydata(tele_keV)
-        l2.set_ydata(tion_keV)
-        l1.set_label(r"$T_e$ (keV)")
-        l2.set_label(r"$T_i$ (keV)")
-        ax1d.set_ylim(0, max(np.nanmax(tele_keV), np.nanmax(tion_keV)) * 1.2)
-    
-    elif plot_velocity_lineout:
-        l1.set_ydata(velx)
-        l2.set_ydata(vely)
-        l1.set_label(r"$v_x$ (cm/s)")
-        l2.set_label(r"$v_y$ (cm/s)")
-        ax1d.set_ylim(0, max(np.nanmax(velx), np.nanmax(vely)) * 1.2)
+    # if plot_temperature_lineout:
+    #     tele_keV = tele * 1e-3
+    #     tion_keV = tion * 1e-3
+    #     l1.set_ydata(tele_keV)
+    #     l2.set_ydata(tion_keV)
+    #     l1.set_label(r"$T_e$ (keV)")
+    #     l2.set_label(r"$T_i$ (keV)")
+    #     ax1d.set_ylim(0, max(np.nanmax(tele_keV), np.nanmax(tion_keV)) * 1.2)
 
     finite_ni_ne = np.concatenate([ni[np.isfinite(ni)], ne[np.isfinite(ne)]])
     if finite_ni_ne.size > 0:

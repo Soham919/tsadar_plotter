@@ -19,7 +19,8 @@ A1 = 1 # H Gas
 A2 = 28 # Si Targ
 A3 = 4 # He cham
 
-def plotFLASH1d_profiles(ds, cg, dims=None, xlims=None, useMicrons=True, ray_data=None):
+def plotFLASH1d_profiles(ds, field, fp, xlims=None, useMicrons=True, savePlots=False, saveDir=None, ray_data=None):
+    cg, dims = get_covering_grid(ds)
     sim_time_ns = get_sim_time_ns(ds)
 
     # ---- get raw data ---- #
@@ -190,6 +191,15 @@ def plotFLASH1d_profiles(ds, cg, dims=None, xlims=None, useMicrons=True, ray_dat
     # ax.set_ylim([0, 1e21])
     # ax2.set_ylim([0, 1])
     fig.tight_layout()
+
+    if savePlots:
+        saveDir = Path(saveDir)
+        saveDir.mkdir(parents=True, exist_ok=True)
+
+        out = saveDir / f"{Path(fp).stem}_{field}_2D_with_lineout.png"
+        plt.savefig(out, bbox_inches="tight")
+        print(f"Saved {out}")
+
     plt.show()
 
     return fig, (ax, ax2, ax_ray)
