@@ -37,8 +37,6 @@ def interp_Prz(P_rz, r_grid, z_grid,
     r_grid = np.asarray(r_grid)
     z_grid = np.asarray(z_grid)
 
-    if P_rz.shape == (len(r_grid), len(z_grid)):
-        P_rz = P_rz.T
 
     expected_shape = (len(z_grid), len(r_grid))
     if P_rz.shape != expected_shape:

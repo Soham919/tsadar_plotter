@@ -5,7 +5,10 @@ from pathlib import Path
 from scipy import constants
 from Omega60_func import gj_dens, gj_n
 import sys
-sys.path.append("/Users/soham/Documents/Kinshock/Scripts")
+# ----- Mac -----#
+#sys.path.append("/Users/soham/Documents/Kinshock/Scripts")
+# ----- Windows -----#
+sys.path.append(r"\\profiles\Users$\sban\Documents\Scripts")
 from h5_helpers.h5_helper import h5_to_dict
 
 
@@ -55,7 +58,7 @@ def GJS_analyze(fp,field):
 
     # n_hansen = gj_dens(1500,5,10,5)  # number density at z = 5 mm from Hansen's formula
 
-    # # ------ Plot -------- #
+    # ------ Plot -------- #
     # fig, ax = plt.subplots(1,2, figsize=(12,5))
     # im = ax[0].pcolormesh(r, z, q, cmap='viridis',shading='auto')
     # ax[0].axhline(y=5, color='red', linestyle='--', label='z = 5 mm')
@@ -71,10 +74,10 @@ def GJS_analyze(fp,field):
     # for i in idx:
     #    ax[1].plot(r, q[i,:], linestyle='-',label=f'z = {full_data["r"][i]*1000} mm')
     
-    # #ax[1].axhline(y=n_hansen, color='red', linestyle='--', label='z = 5 mm Hansen')  # expectation from Hansen
-    # ax[1].axhline(x=5, color='black', linestyle='--', label='foil location')
-    # ax[1].axhline(x=7.5, color='grey', linestyle='--')
-    # ax[1].axhline(x=2.5, color='grey', linestyle='--')
+    #ax[1].axhline(y=n_hansen, color='red', linestyle='--', label='z = 5 mm Hansen')  # expectation from Hansen
+    #ax[1].axvline(x=5, color='black', linestyle='--', label='foil location')
+    #ax[1].axvline(x=7.5, color='grey', linestyle='--')
+    #ax[1].axvline(x=2.5, color='grey', linestyle='--')
     # ax[1].set_xlabel('r (mm)')
     # ax[1].set_ylabel('rho (g/cm^-3)')
     # ax[1].legend()
@@ -85,8 +88,10 @@ def GJS_analyze(fp,field):
 
 # ---- Run for seeing plot ---- #
 if __name__ == "__main__":
-   # --------- File path ---------- #
-    baseDir = Path("/Users/soham/Documents/Kinshock")
+   # --------- Mac ---------- #
+    #baseDir = Path("/Users/soham/Documents/Kinshock")
+   # --------- Windows ---------- #
+    baseDir = Path(r"\\profiles\Users$\sban\Documents\Kinshock")
     fp = baseDir/"Kinshock-26A"/"GasJet"
     file = "D-GJ-C-232_H2He_1500psi.h5"
     fp = fp/file
