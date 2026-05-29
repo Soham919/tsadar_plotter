@@ -2,9 +2,9 @@ import numpy
 # FLASH refinement calculator
 
 nyb = 8 # number of cells per block
-nblocky = 32  # number of blocks in y
-refine = 8  # amr refinement level 
-domain = 13000e-4 # your domain length, cm
+nblocky = 16  # number of blocks in y
+refine = 9  # amr refinement level 
+domain = 10201e-4 # your domain length, cm
 resolve = 1e-4 # what you want to resolve cm
 x = domain/(nyb*nblocky*(2**(refine-1)))
 ncells = resolve/x

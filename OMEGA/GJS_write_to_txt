@@ -1,0 +1,38 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from pathlib import Path
+import sys
+sys.path.append("/Users/soham/Documents/Kinshock/Scripts")
+from OMEGA.GJS_analyze import GJS_analyze
+from OMEGA.GJS_target_disp import interp_Prz
+from h5_helpers.h5_helper import h5_to_dict
+
+# ------ File Path ------ #
+baseDir = Path("/Users/soham/Documents/Kinshock")
+fp = baseDir/"Kinshock-26A"/"GasJet"
+file = "D-GJ-C-232_H2He_1500psi.h5"
+fp = fp/file
+
+r, z, q = GJS_analyze(fp, "density")
+P_rz, P_xyz = interp_Prz(q, r, z)
+print("r range:", r.min(), r.max())
+print("z range:", z.min(), z.max())
+
+x = np.linspace(-20,20, 1000) # x in mm
+y = np.linspace(-20,20, 1000) # y in mm
+Z = 5 # z in mm
+
+X, Y = np.meshgrid(x, y)
+P_interp = np.zeros_like(X)
+P_interp = P_xyz(X, Y, Z)
+
+fig, ax = plt.subplots(1,2,figsize=(10, 6))
+ax[0].pcolormesh(X, Y, P_interp, cmap = "viridis", shading="auto")
+ax[0].axhline(0, color="white", linestyle="--")
+ax[0].set_xlabel("x (mm)")
+ax[0].set_ylabel("y (mm)")
+ax[0].set_title("Interpolated Pressure at z = 5 mm")
+
+ax[1].plot(x, P_interp[:,480])
+#plt.colorbar(label="Pressure (Pa)")
+plt.show()
