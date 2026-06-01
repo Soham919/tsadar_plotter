@@ -35,6 +35,27 @@ ue2_td = np.gradient(e2_td, t2D_td)
 ue1_td = np.gradient(e1_td, t2D_td)
 #u1d2d = np.gradient(compare_1d_2d, t2D)
 
+# Time deresolved 2D 3TW data (1um resolve) 
+t2D_td = [0, 0.2, 0.4, 0.6, 0.8, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
+e3_td = np.array([200, 250, 370, 650, 960, 1240, 1850, 2380, 2840, 3250, 3640, 3990, np.nan, np.nan]) 
+e2_td = np.array([200, 250, 320, 460, 740, 910, 1250, 1540, 1730, 2020, 2240, 2440, 2630, 2810])
+e1_td = np.array([200, 250, 330, 450, 550, 630, 810, 950, 1100, 1240, 1370, 1490, 1610, 1720]) 
+#compare_1d_2d = np.array([200, 220, 240, 320, 410, 490, 670, 870, 950, 1140, 1330, 1990, 2630, 3210, 3860, 4420, 4890, 5460, 6030])
+ue3_td = np.gradient(e3_td, t2D_td)
+ue2_td = np.gradient(e2_td, t2D_td)
+ue1_td = np.gradient(e1_td, t2D_td)
+#u1d2d = np.gradient(compare_1d_2d, t2D)
+
+# 2D offset runs
+t2D_offset = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
+
+e3_8mm_offset = np.array([200, 240, 270, 350, 500, 770, 990, 1170, 1380, 1560, 1740, 2500, 3090, 3610, 4070, 4480, 4820, 5180, 5490, 5780, 6060, 6350, 6610, 6880, 7150, 7400, 7650])
+e3_6_5mm_offset = np.array([200, 240, 270, 380, 570, 730, 890, 1060, 1200, 1360, 1500, 2090, 2590, 3050, 3430, 3800, 4120, 4440, 4740, 5030, 5310, 5580, 5850, 6100, 6370, 6600, 6850])
+e3_5mm_offset = np.array([200, 250, 260, 320, 460, 610, 770, 920, 1090, 1240, 1380, 1980, 2460, 2910, 3320, 3690, 4030, 4350, 4670, 4990, 5260, 5560, 5830, 6100, np.nan, np.nan, np.nan])
+
+ue3_8mm_offset = np.gradient(e3_8mm_offset, t2D_offset)
+ue3_6_5mm_offset = np.gradient(e3_6_5mm_offset, t2D_offset)
+ue3_5mm_offset = np.gradient(e3_5mm_offset, t2D_offset)
 
 fig, ax = plt.subplots(figsize=(8, 5))
 # ax.plot(t, tw05, marker="o", label="0.5 TW")
@@ -60,15 +81,20 @@ ax.plot(t2D_td, e3_td, marker="o", label="1000um time deresolved")
 # ax.plot(t2D, ue1, marker="o", label="10um 3TW - 2D")
 # ax.plot(t2D, ue2, marker="o", label="100um 3TW - 2D")
 # ax.plot(t2D, ue3, marker="o", label="1000um 3TW - 2D")
-# #ax.plot(t2D, u1d2d, marker="o", label="3TW - 1D")
+# ax.plot(t2D, u1d2d, marker="o", label="3TW - 1D")
 
-# ax.plot(t2D_td, ue1_td, marker="o", label="10um time deresolved")
-# ax.plot(t2D_td, ue2_td, marker="o", label="100um time deresolved")
-# ax.plot(t2D_td, ue3_td, marker="o", label="1000um time deresolved")
+# 2D offset data
+# ax.plot(t2D_offset, e3_8mm_offset, marker="o", label="8mm offset 2D")
+# ax.plot(t2D_offset, e3_6_5mm_offset, marker="o", label="6.5mm offset 2D")
+# ax.plot(t2D_offset, e3_5mm_offset, marker="o", label="5mm offset 2D")
+
+ax.plot(t2D_offset, ue3_8mm_offset, marker="o", label="8mm offset 2D")
+ax.plot(t2D_offset, ue3_6_5mm_offset, marker="o", label="6.5mm offset 2D")
+ax.plot(t2D_offset, ue3_5mm_offset, marker="o", label="5mm offset 2D")
 
 ax.legend()
 ax.set_xlabel("Time (ns)")
-ax.set_ylabel("Shock front (mm)")
-plt.title("Shock front position vs time for different laser spot sizes")
+ax.set_ylabel("Shock speed (mm/ns)")
+plt.title("Shock front speed vs time for different laser spot sizes")
 ax.grid(True, alpha=0.3)
 plt.show()

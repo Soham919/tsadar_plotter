@@ -33,9 +33,9 @@ runDir = baseDir / ".." / "Flash" / "test_runs" / "1mmSpot_8mm_offset"
 # fp = runDir / file
 
 # --------- Windows ------------
-#runDir = Path(r"C:\Simulation_data\FLASH\2D\1mm_spot_Si_2")
+runDir = Path(r"C:\Simulation_data\FLASH\2D\offset\1mmSpot_5mm_offset")
 
-target_time_ns = [0.4]  # ns
+target_time_ns = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9]  # ns
 
 files_info = find_nearest_flash_file_from_table(
     target_time_ns,
