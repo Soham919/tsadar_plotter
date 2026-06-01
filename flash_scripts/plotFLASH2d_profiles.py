@@ -292,7 +292,7 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
         origin="upper",
         aspect="equal",
         interpolation="nearest",
-        cmap="jet",
+        cmap="inferno",
         norm=norm
     )
 
@@ -429,6 +429,6 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
         plt.savefig(out, dpi=save_dpi, bbox_inches="tight")
         print(f"Saved {out}")
 
-    plt.show()
+    #plt.show()
 
     return fig, (ax2d, ax1d, ax1d_2)
