@@ -28,14 +28,14 @@ A2 = 28 # Si
 baseDir = Path().resolve().parent
 
 # --------- Mac ------------
-# runDir = baseDir / ".." / "Flash" / "test_runs" / "10um_spot_2"
+runDir = baseDir / ".." / "Flash" / "test_runs" / "1mmSpot_8mm_offset"
 # file = "ks_hdf5_plt_cnt_0050"
 # fp = runDir / file
 
 # --------- Windows ------------
-runDir = Path(r"C:\Simulation_data\FLASH\2D\1mm_spot_Si_2")
+#runDir = Path(r"C:\Simulation_data\FLASH\2D\1mm_spot_Si_2")
 
-target_time_ns = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,2.5,3,3.5]  # ns
+target_time_ns = [0.4]  # ns
 
 files_info = find_nearest_flash_file_from_table(
     target_time_ns,
@@ -117,17 +117,19 @@ for filename, file_num, matched_time_s, matched_time_ns in files_info:
     # Comment/uncomment this block for 2D
     # ============================================================
 
-    # plot_2d_field(
+    field = "dens"
+    
+    # plot_2d_profiles(
     #     ds,
+    #     fp,
     #     "flash",
-    #     field2D,
+    #     field,
     #     useMicrons,
     #     savePlots,
     #     saveDir,
-    #     fp,
     #     rays
     # )
-    field = "dens"
+    
     plotFLASH2d_profiles(ds, "flash", field, useMicrons, savePlots, saveDir, fp, rays)
 
 

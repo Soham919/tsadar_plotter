@@ -292,7 +292,7 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
         origin="upper",
         aspect="equal",
         interpolation="nearest",
-        cmap="plasma",
+        cmap="jet",
         norm=norm
     )
 
@@ -375,8 +375,8 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
     c2 = "blueviolet"
 
     l3, = ax1d_2.plot(
-        coord_plot,
-        las_depo,
+        coord_plot[50:-1],
+        las_depo[50:-1],
         color=c2,
         linewidth=2,
         linestyle="--",

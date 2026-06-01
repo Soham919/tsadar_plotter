@@ -391,59 +391,96 @@ def plot_1d_profiles(ds, fields, sim_time_ns, useMicrons, savePlots, saveDir, fp
         plt.show()
 
 
-def plot_2d_field(ds, ftype, field, useMicrons, savePlots, saveDir, fp, rays = False):
+def plot_2d_profiles(
+    ds,
+    fp,
+    ftype,
+    field,
+    useMicrons=True,
+    savePlots=False,
+    saveDir=Path("."),
+    rays=False,
+    log2d=True,
+):
     """
-    Plot 2D pcolormesh from FLASH output.
+    Plot one FLASH 2D field and one lineout through fixed x or fixed y.
+
+    line_axis = "x" -> lineout at fixed x, plotted vs y
+    line_axis = "y" -> lineout at fixed y, plotted vs x
     """
+
+    # -----------------------
+    # Hardcoded lineout choice
+    # -----------------------
+    line_axis = "x"        # choose "x" or "y"
+    line_value_um = 0 # lineout position in microns
+
     cg, dims = get_covering_grid(ds)
     sim_time_ns = get_sim_time_ns(ds)
     arr = get_field_array(cg, ftype, field)
 
     print(f"{field} raw shape from covering_grid:", arr.shape)
 
-    # Pick z-slice explicitly
     arr2d = arr[:, :, 0]
 
     print(f"{field} 2D shape:", arr2d.shape)
     print(f"{field} min/max:", np.nanmin(arr2d), np.nanmax(arr2d))
 
-    # Domain edges
+    # Domain edges in cm
     x0, x1 = float(ds.domain_left_edge[0]), float(ds.domain_right_edge[0])
     y0, y1 = float(ds.domain_left_edge[1]), float(ds.domain_right_edge[1])
 
     nx, ny = arr2d.shape
 
-    # Cell edges for pcolormesh
+    # Edges for pcolormesh
     x_edges_cm = np.linspace(x0, x1, nx + 1)
     y_edges_cm = np.linspace(y0, y1, ny + 1)
+
+    # Centers for lineout
+    x_cent_cm = 0.5 * (x_edges_cm[:-1] + x_edges_cm[1:])
+    y_cent_cm = 0.5 * (y_edges_cm[:-1] + y_edges_cm[1:])
 
     if useMicrons:
         x_edges = x_edges_cm * 1e4
         y_edges = y_edges_cm * 1e4
+        x_cent = x_cent_cm * 1e4
+        y_cent = y_cent_cm * 1e4
+        line_value = line_value_um
         xlabel = r"$x$ [$\mu$m]"
         ylabel = r"$y$ [$\mu$m]"
+        unit_label = r"$\mu$m"
     else:
         x_edges = x_edges_cm
         y_edges = y_edges_cm
+        x_cent = x_cent_cm
+        y_cent = y_cent_cm
+        line_value = line_value_um / 1e4
         xlabel = r"$x$ [cm]"
         ylabel = r"$y$ [cm]"
+        unit_label = "cm"
 
     X, Y = np.meshgrid(x_edges, y_edges, indexing="ij")
 
+    if rays:
+        ray_data = read_flash_rays(fp)
+
+    fig, (ax2d, axline) = plt.subplots(
+        2, 1, figsize=(7, 8),
+        gridspec_kw={"height_ratios": [3, 1]},
+        constrained_layout=True
+    )
+
+    # -----------------------
+    # 2D plot
+    # -----------------------
     positive = arr2d[arr2d > 0]
 
-    if rays == True:
-        ray_data = read_flash_rays(fp)
-    
-    fig, ax = plt.subplots(figsize=(6, 6))
-
-    if positive.size > 0:
+    if log2d and positive.size > 0:
         norm = LogNorm(vmin=np.nanmin(positive), vmax=np.nanmax(arr2d))
     else:
-        print(f"Warning: {field} has no positive values. Using linear scale.")
         norm = Normalize(vmin=np.nanmin(arr2d), vmax=np.nanmax(arr2d))
 
-    pcm = ax.pcolormesh(
+    pcm = ax2d.pcolormesh(
         X,
         Y,
         arr2d,
@@ -452,27 +489,61 @@ def plot_2d_field(ds, ftype, field, useMicrons, savePlots, saveDir, fp, rays = F
         norm=norm,
     )
 
-    if rays == True :
-        # overlay rays
-        plot_rays(ax, ray_data, xscale=1e4, yscale=1e4, color="w", lw=0.8)
+    if rays:
+        plot_rays(ax2d, ray_data, xscale=1e4, yscale=1e4, color="w", lw=0.8)
 
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.set_title(f"{field}, t = {sim_time_ns:.3f} ns")
-    ax.set_aspect("equal")
+    # -----------------------
+    # Lineout
+    # -----------------------
+    if line_axis.lower() == "x":
+        ix = np.argmin(np.abs(x_cent - line_value))
+        line = arr2d[ix, :]
+        line_coord = y_cent
 
-    cbar = fig.colorbar(pcm, ax=ax)
+        ax2d.axvline(x_cent[ix], color="w", ls="--", lw=1.2)
+        axline.plot(line_coord, line)
+
+        axline.set_ylim([0, 0.00035])
+    
+        axline.set_xlabel(ylabel)
+        axline.set_ylabel(field)
+        axline.set_title(
+            rf"Lineout vs $y$ at $x = {x_cent[ix]:.3f}$ {unit_label}"
+        )
+
+    elif line_axis.lower() == "y":
+        iy = np.argmin(np.abs(y_cent - line_value))
+        line = arr2d[:, iy]
+        line_coord = x_cent
+
+        ax2d.axhline(y_cent[iy], color="w", ls="--", lw=1.2)
+        axline.plot(line_coord, line)
+
+        axline.set_xlabel(xlabel)
+        axline.set_ylabel(field)
+        axline.set_title(
+            rf"Lineout vs $x$ at $y = {y_cent[iy]:.3f}$ {unit_label}"
+        )
+
+    else:
+        raise ValueError("line_axis must be either 'x' or 'y'")
+
+    ax2d.set_xlabel(xlabel)
+    ax2d.set_ylabel(ylabel)
+    ax2d.set_title(f"{field}, t = {sim_time_ns:.3f} ns")
+    ax2d.set_aspect("equal")
+
+    cbar = fig.colorbar(pcm, ax=ax2d)
     cbar.set_label(field)
 
-    plt.tight_layout()
+    axline.grid(True, alpha=0.3)
 
     if savePlots:
-        out = saveDir / f"{Path(fp).stem}_{field}_2D.png"
+        out = saveDir / f"{Path(fp).stem}_{field}_2D_lineout_{line_axis}{line_value_um:.1f}um.png"
         plt.savefig(out, dpi=200)
         print(f"Saved {out}")
 
     plt.show()
-
 
 def read_flash_rays(filename):
     """
