@@ -10,7 +10,7 @@ from TS_aux import load_file
 from TS_aux import shot_data
 
 def plot_92534_EPW(data):
-    lp = data['92534']['92534_4_nersc.csv']
+    lp = data['learned_parameters.csv']
     r = shot_data.loc[92534,"pointing"] - lp["Radius (\\mum)"]/10**3
     bv = (r*10**2)/shot_data.loc[92534,"timing"]
     ## Ti, Va, fract plot for all 3 species 
@@ -52,9 +52,9 @@ def plot_92534_EPW(data):
 
     #ax1[2].plot(r, lp["Va_ion-2"],color='mediumblue',linewidth=2,linestyle='-')
     #ax1[2].plot(r, bv,color='k',linewidth=2,linestyle='--')
-    ax1.set_title(r'92534 $n_e$ and $T_e$ from EPW', pad=15)
+    ax1.set_title(r'Electron density and temperature', pad=15)
     ax1.set_xlabel(r"$x (mm)$")
-    ax1.set_xlim([2.4, 3.65])
+    #ax1.set_xlim([2.4, 3.65])
     #ax1[1,1].set_ylim([0.22, 0.4])
     ax1.invert_xaxis()
     ax1.set_ylabel(r"$T_{e} (keV)$", color = c1)

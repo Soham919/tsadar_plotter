@@ -31,6 +31,128 @@ def _auto_downsample_2d(arr, max_pixels=1200):
     stride = max(1, int(np.ceil(max(n0, n1) / max_pixels)))
     return arr[::stride, ::stride], stride
 
+def detect_first_density_jump_right_to_left(
+    coord,
+    dens,
+    jump_threshold,
+    window=5,
+    mode="up",
+    min_coord=None,
+    max_coord=None,
+):
+    """
+    Detect the first density jump while scanning from high coord to low coord.
+
+    Good for detecting the shock front in a 1D lineout where the shock is the
+    first big density jump encountered from right to left.
+
+    Parameters
+    ----------
+    coord : 1D array
+        Position coordinate, e.g. y_centers in microns.
+
+    dens : 1D array
+        Density lineout, e.g. ne or ni.
+
+    jump_threshold : float
+        Minimum jump in density needed to count as the shock.
+
+    window : int
+        Number of points averaged on each side of the candidate jump.
+
+    mode : str
+        "up"   : density increases as we scan right-to-left.
+        "down" : density decreases as we scan right-to-left.
+        "abs"  : either direction counts.
+
+    min_coord, max_coord : float or None
+        Optional coordinate range to search inside.
+
+    Returns
+    -------
+    result : dict
+        result["found"] is True/False.
+        result["shock_coord"] gives the detected shock position.
+    """
+
+    coord = np.asarray(coord)
+    dens = np.asarray(dens)
+
+    if coord.ndim != 1 or dens.ndim != 1:
+        raise ValueError("coord and dens must be 1D arrays.")
+
+    if len(coord) != len(dens):
+        raise ValueError("coord and dens must have the same length.")
+
+    good = np.isfinite(coord) & np.isfinite(dens)
+
+    if min_coord is not None:
+        good &= coord >= min_coord
+
+    if max_coord is not None:
+        good &= coord <= max_coord
+
+    coord = coord[good]
+    dens = dens[good]
+
+    if len(coord) < 2 * window + 2:
+        return {
+            "found": False,
+            "shock_coord": np.nan,
+            "shock_index": None,
+            "jump_value": np.nan,
+            "dens_left": np.nan,
+            "dens_right": np.nan,
+        }
+
+    # Sort so coord increases left-to-right numerically.
+    sort_idx = np.argsort(coord)
+    coord = coord[sort_idx]
+    dens = dens[sort_idx]
+
+    n = len(coord)
+
+    # Scan from high coord to low coord.
+    for i in range(n - window - 1, window - 1, -1):
+
+        # Smaller coordinate side
+        dens_left = np.mean(dens[i - window + 1 : i + 1])
+
+        # Larger coordinate side
+        dens_right = np.mean(dens[i + 1 : i + 1 + window])
+
+        # Jump encountered when moving right-to-left.
+        jump = dens_left - dens_right
+
+        if mode == "up":
+            condition = jump >= jump_threshold
+        elif mode == "down":
+            condition = jump <= -jump_threshold
+        elif mode == "abs":
+            condition = abs(jump) >= jump_threshold
+        else:
+            raise ValueError("mode must be 'up', 'down', or 'abs'.")
+
+        if condition:
+            shock_coord = 0.5 * (coord[i] + coord[i + 1])
+
+            return {
+                "found": True,
+                "shock_coord": shock_coord,
+                "shock_index": i,
+                "jump_value": jump,
+                "dens_left": dens_left,
+                "dens_right": dens_right,
+            }
+
+    return {
+        "found": False,
+        "shock_coord": np.nan,
+        "shock_index": None,
+        "jump_value": np.nan,
+        "dens_left": np.nan,
+        "dens_right": np.nan,
+    }
 
 def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
                   savePlots, saveDir, fp, rays=False):
@@ -68,6 +190,27 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
 
     # Save speed/size knob
     save_dpi = 150
+
+    # Shock detector settings
+    detect_shock_position = True
+
+    # Use "ne" or "ni" for shock detection.
+    shock_density_source = "ne"
+
+    # Minimum density jump needed to count as the shock.
+    # Tune this based on your plotted lineout.
+    shock_jump_threshold = 5e19
+
+    # Number of cells to average on each side of the jump.
+    shock_window = 5
+
+    # "up" means density increases as we scan from right to left.
+    # For your attached plot, "up" is probably right.
+    shock_jump_mode = "up"
+
+    # Optional search range. Use None to search full lineout.
+    shock_min_coord = None
+    shock_max_coord = None
 
     # ============================================================
     # Load data
@@ -212,6 +355,50 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
 
     las_depo = dens * depo * 1e-7
 
+    # ============================================================
+    # Detect shock position from 1D lineout
+    # ============================================================
+    shock_result = None
+    shock_coord = np.nan
+
+    if detect_shock_position:
+
+        if shock_density_source.lower() == "ne":
+            shock_dens = ne
+            shock_label = r"$n_e$"
+        elif shock_density_source.lower() == "ni":
+            shock_dens = ni
+            shock_label = r"$n_i$"
+        else:
+            raise ValueError("shock_density_source must be either 'ne' or 'ni'.")
+
+        shock_result = detect_first_density_jump_right_to_left(
+            coord_plot,
+            shock_dens,
+            jump_threshold=shock_jump_threshold,
+            window=shock_window,
+            mode=shock_jump_mode,
+            min_coord=shock_min_coord,
+            max_coord=shock_max_coord,
+        )
+
+        shock_coord = shock_result["shock_coord"]
+
+        if shock_result["found"]:
+            print(
+                f"Detected shock using {shock_density_source}: "
+                f"{shock_coord:.4f} {coord_unit}, "
+                f"jump = {shock_result['jump_value']:.3e}, "
+                f"t = {sim_time_ns:.4f} ns"
+            )
+        else:
+            print(
+                f"No shock detected using {shock_density_source} "
+                f"at t = {sim_time_ns:.4f} ns. "
+                f"Try lowering shock_jump_threshold."
+            )
+    # ============================================================
+
     # ---- quick check: is laser deposition nonzero near chosen x? ---- #
     check_x_um = 1000.0   # choose x location in microns
     tol = 1e-30          # tolerance for "nonzero"
@@ -336,6 +523,16 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
     l1, = ax1d.plot(coord_plot, ni, lw=2, color=c0, label=r"$n_i$")
     l2, = ax1d.plot(coord_plot, ne, lw=2, color=c1, label=r"$n_e$")
 
+    # Draw detected shock position on 1D lineout
+    if detect_shock_position and shock_result is not None and shock_result["found"]:
+        ax1d.axvline(
+            shock_coord,
+            color="k",
+            linestyle=":",
+            linewidth=2,
+            label=rf"shock = {shock_coord:.1f} {coord_unit}"
+        )
+        
     # Optional Te/Ti plotting block. Turn plot_temperature_lineout=True above.
     if plot_temperature_lineout:
         tele_keV = tele * 1e-3
@@ -431,4 +628,4 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
 
     #plt.show()
 
-    return fig, (ax2d, ax1d, ax1d_2)
+    return fig, (ax2d, ax1d, ax1d_2), shock_coord, shock_result

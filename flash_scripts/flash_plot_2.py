@@ -28,15 +28,16 @@ A2 = 28 # Si
 baseDir = Path().resolve().parent
 
 # --------- Mac ------------
-runDir = baseDir / ".." / "Flash" / "test_runs" / "1mmSpot_8mm_offset"
+# runDir = baseDir / ".." / "Flash" / "test_runs" / "1mmSpot_8mm_offset"
 # file = "ks_hdf5_plt_cnt_0050"
 # fp = runDir / file
 
 # --------- Windows ------------
-runDir = Path(r"C:\Simulation_data\FLASH\2D\offset\1mmSpot_5mm_offset")
+runDir = Path(r"C:\Simulation_data\FLASH\2D\2Dcylindrical_1umSi_1mmSpot")
 
-target_time_ns = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9]  # ns
-
+#target_time_ns = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9]  # ns
+target_time_ns = [0,0.1,0.2,0.3]
+shock_pos = np.zeros(len(target_time_ns))
 files_info = find_nearest_flash_file_from_table(
     target_time_ns,
     runDir,
@@ -63,9 +64,9 @@ xlims = None
 # ============================================================
 # Main loop over requested times
 # ============================================================
-
+i = 0
 for filename, file_num, matched_time_s, matched_time_ns in files_info:
-
+    
     fp = filename
 
     print("\n" + "=" * 70)
@@ -130,8 +131,8 @@ for filename, file_num, matched_time_s, matched_time_ns in files_info:
     #     rays
     # )
     
-    plotFLASH2d_profiles(ds, "flash", field, useMicrons, savePlots, saveDir, fp, rays)
-
+    fig, axes, shock_pos[i], shock_result = plotFLASH2d_profiles(ds, "flash", field, useMicrons, savePlots, saveDir, fp, rays=False)
+    i = i+1
 
     # ============================================================
     # Ray diagnostics
@@ -198,3 +199,5 @@ for filename, file_num, matched_time_s, matched_time_ns in files_info:
 
 # else:
 #     raise ValueError(f"Unsupported detected plot mode: {detectedMode}")
+
+np.save(runDir / "shock_positions.npy", shock_pos)

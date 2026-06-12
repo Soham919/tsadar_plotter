@@ -1,8 +1,10 @@
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
-import h5_helpers.h5_helper as h5_helper
+import sys
 from pathlib import Path
+sys.path.append(r"\\profiles\Users$\sban\Documents\Scripts")
+import h5_helpers.h5_helper as h5_helper
 
 baseDir = Path().resolve().parent
 # --------- Mac ------------
@@ -11,21 +13,21 @@ baseDir = Path().resolve().parent
 # fp = fp / file
 
 # --------- Windows ------------
-shot = "92532"  # change this for the shot you want to plot
+shot = "92534"  # change this for the shot you want to plot
 fp = baseDir/"Kinshock"/"Kinshock-19A"/"data"/shot
 saveDir = baseDir/"Kinshock"/"Kinshock-19A"/"data"/shot/"plots"
 if not saveDir.exists():
     saveDir.mkdir(parents = True, exist_ok = True)
 
 
-f_iaw = f"IAW-s{shot}.h5"  # switch names for ROSS and CCD since they are named differently
-f_epw = f"EPW-s{shot}.h5"  # switch names for ROSS and CCD since they are named differently
-f_tbd = f"P9TBD_CCD-s{shot}_ccd.h5"
-f_tpdi = f"TPDI-s{shot}.h5"
-f_xrphc = f"XRPHC-CID-xphc_{shot}_h8_cid.h5"
+f_iaw = f"IAW_CCD-s{shot}.h5"  # switch names for ROSS and CCD since they are named differently
+f_epw = f"EPW_CCD-s{shot}.h5"  # switch names for ROSS and CCD since they are named differently
+#f_tbd = f"P9TBD_CCD-s{shot}_ccd.h5"
+#f_tpdi = f"TPDI-s{shot}.h5"
+#f_xrphc = f"XRPHC-CID-xphc_{shot}_h8_cid.h5"
 fp = fp 
 
-h5_helper.h5_show(fp/ f_xrphc)
+# h5_helper.h5_show(fp/ f_xrphc)
 
 with h5py.File(fp/ f_iaw,'r') as f:
     iaw = f["Streak_array"][:]
@@ -36,8 +38,8 @@ with h5py.File(fp/ f_epw,'r') as f:
 #with h5py.File(fp/ f_tbd,'r') as f:
 #    tbd = f["Streak_array"][:]
 
-with h5py.File(fp/ f_tpdi,'r') as f:
-    tpdi = f["Streak_array"][:]
+# with h5py.File(fp/ f_tpdi,'r') as f:
+#     tpdi = f["Streak_array"][:]
 
 #with h5py.File(fp/ f_xrphc,'r') as f:
 #    xr_bg = f["cid_background"][:]
@@ -71,20 +73,20 @@ with h5py.File(fp/ f_tpdi,'r') as f:
 
 ## ------- Plot the TPDI image --------
 #ax.clear()
-fig, ax  = plt.subplots()
-im = ax.imshow(tpdi[0,:,:], cmap='turbo')  # adjust vmin and vmax for better contrast
-plt.colorbar(im, label='counts')
-ax.set_xticks([])
-ax.set_yticks([])
-ax.set_title(f"Shot {shot} - TPDI")
-save_path = saveDir / f"shot_{shot}_tpdi.png"
-plt.savefig(save_path, dpi=300, bbox_inches='tight')
-fig.canvas.draw()
-plt.show()
+# fig, ax  = plt.subplots()
+# im = ax.imshow(tpdi[0,:,:], cmap='turbo')  # adjust vmin and vmax for better contrast
+# plt.colorbar(im, label='counts')
+# ax.set_xticks([])
+# ax.set_yticks([])
+# ax.set_title(f"Shot {shot} - TPDI")
+# save_path = saveDir / f"shot_{shot}_tpdi.png"
+# plt.savefig(save_path, dpi=300, bbox_inches='tight')
+# fig.canvas.draw()
+# plt.show()
 
 
 ## ------- Plot the IAW and EPW images --------
-ax.clear()
+# ax.clear()
 fig, ax  = plt.subplots(1,2, figsize=(12,5))
 
 # ------------- Readjust for ccd imgs -------------- #

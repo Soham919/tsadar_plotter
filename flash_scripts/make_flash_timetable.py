@@ -6,7 +6,7 @@ from flash_helpers import make_flash_time_table
 #flash_folder = Path("/Users/soham/Documents/Flash/test_runs/1mmSpot_8mm_offset")
 
 # ---- Windows ---- #
-flash_folder = Path(r"C:\Simulation_data\FLASH\2D\offset\1mmSpot_5mm_offset")
+flash_folder = Path(r"C:\Simulation_data\FLASH\2D\2Dcylindrical_1umSi_1mmSpot")
 
 
 make_flash_time_table(

@@ -5,14 +5,14 @@ from pathlib import Path
 username = "sban"
 host = "cl7head"
 
-remote_dir = "/home/sban/FLASH4.7.1/1mmSpot_5mm_offset"
+remote_dir = "/home/sban/FLASH4.7.1/2Dcylindrical_1umSi_1mmSpot"
 #remote_dir = "/g1/hdd/sban/FLASH_runs/1D/1mm_spot/1D2Dcompare_Si_3TW"
 file_pattern = "*hdf5_plt_cnt_*"          # examples: "*.h5", "*.png", "*.txt"
 # ---- Mac ---- #
 # local_dir = "/Users/soham/Documents/Flash/test_runs/1mmSpot_8mm_offset"
 
 # ---- Windows ---- #
-local_dir = Path(r"C:\Simulation_data\FLASH\2D\offset\1mmSpot_5mm_offset")
+local_dir = Path(r"C:\Simulation_data\FLASH\2D\2Dcylindrical_1umSi_1mmSpot")
 # -------------------------------
 
 def scp_copy_files(username, host, remote_dir, file_pattern, local_dir):
