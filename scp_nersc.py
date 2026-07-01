@@ -4,9 +4,9 @@ from pathlib import Path
 # -------- user settings --------
 username = "soham_b"
 host = "perlmutter.nersc.gov"
-remote_dir = "/global/homes/s/soham_b/tsadar_copy/tsadar/external/data/"
-file_pattern = "*92534*"          # examples: "*.h5", "*.png", "*.txt"
-local_dir = "/Users/soham/Documents/nersc"
+remote_dir = "/global/u1/s/soham_b/tsadar_new/configs/Kinshock19A_92534/"
+file_pattern = "*"          # examples: "*.h5", "*.png", "*.txt"
+local_dir = "/Users/soham/Documents/tsadar/configs/Kinshock19A_92534"
 # -------------------------------
 
 def scp_copy_files(username, host, remote_dir, file_pattern, local_dir):

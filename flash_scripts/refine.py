@@ -9,4 +9,5 @@ resolve = 100e-4 # what you want to resolve cm
 x = domain/(nyb*nblocky*(2**(refine-1)))
 ncells = resolve/x
 
+print("x = ",x*(10**4),"um")
 print("Number of cells in ",resolve*1e4,"um = ", ncells)
