@@ -391,6 +391,12 @@ def plot_1d_profiles(ds, fields, sim_time_ns, useMicrons, savePlots, saveDir, fp
         plt.show()
 
 
+def _auto_downsample_2d(arr, max_pixels=1200):
+    n0, n1 = arr.shape
+    stride = max(1, int(np.ceil(max(n0, n1) / max_pixels)))
+    return arr[::stride, ::stride], stride
+
+
 def plot_2d_profiles(
     ds,
     fp,
@@ -403,40 +409,44 @@ def plot_2d_profiles(
     log2d=True,
 ):
     """
-    Plot one FLASH 2D field and one lineout through fixed x or fixed y.
+    Fast plot of one FLASH 2D field + one lineout.
 
-    line_axis = "x" -> lineout at fixed x, plotted vs y
-    line_axis = "y" -> lineout at fixed y, plotted vs x
+    line_axis = "x" -> fixed x, plot vs y
+    line_axis = "y" -> fixed y, plot vs x
     """
 
     # -----------------------
     # Hardcoded lineout choice
     # -----------------------
-    line_axis = "x"        # choose "x" or "y"
-    line_value_um = 0 # lineout position in microns
+    line_axis = "x"       # "x" or "y"
+    line_value_um = 0.0
 
+    max_plot_pixels = 1200
+    save_dpi = 150
+
+    # -----------------------
+    # Load data
+    # -----------------------
     cg, dims = get_covering_grid(ds)
     sim_time_ns = get_sim_time_ns(ds)
+
     arr = get_field_array(cg, ftype, field)
-
-    print(f"{field} raw shape from covering_grid:", arr.shape)
-
-    arr2d = arr[:, :, 0]
+    arr2d = np.asarray(arr[:, :, 0])
 
     print(f"{field} 2D shape:", arr2d.shape)
     print(f"{field} min/max:", np.nanmin(arr2d), np.nanmax(arr2d))
 
-    # Domain edges in cm
+    # -----------------------
+    # Coordinates
+    # -----------------------
     x0, x1 = float(ds.domain_left_edge[0]), float(ds.domain_right_edge[0])
     y0, y1 = float(ds.domain_left_edge[1]), float(ds.domain_right_edge[1])
 
     nx, ny = arr2d.shape
 
-    # Edges for pcolormesh
     x_edges_cm = np.linspace(x0, x1, nx + 1)
     y_edges_cm = np.linspace(y0, y1, ny + 1)
 
-    # Centers for lineout
     x_cent_cm = 0.5 * (x_edges_cm[:-1] + x_edges_cm[1:])
     y_cent_cm = 0.5 * (y_edges_cm[:-1] + y_edges_cm[1:])
 
@@ -449,101 +459,166 @@ def plot_2d_profiles(
         xlabel = r"$x$ [$\mu$m]"
         ylabel = r"$y$ [$\mu$m]"
         unit_label = r"$\mu$m"
+        ray_scale = 1e4
     else:
         x_edges = x_edges_cm
         y_edges = y_edges_cm
         x_cent = x_cent_cm
         y_cent = y_cent_cm
-        line_value = line_value_um / 1e4
+        line_value = line_value_um * 1e-4
         xlabel = r"$x$ [cm]"
         ylabel = r"$y$ [cm]"
         unit_label = "cm"
-
-    X, Y = np.meshgrid(x_edges, y_edges, indexing="ij")
-
-    if rays:
-        ray_data = read_flash_rays(fp)
-
-    fig, (ax2d, axline) = plt.subplots(
-        2, 1, figsize=(7, 8),
-        gridspec_kw={"height_ratios": [3, 1]},
-        constrained_layout=True
-    )
+        ray_scale = 1.0
 
     # -----------------------
-    # 2D plot
-    # -----------------------
-    positive = arr2d[arr2d > 0]
-
-    if log2d and positive.size > 0:
-        norm = LogNorm(vmin=np.nanmin(positive), vmax=np.nanmax(arr2d))
-    else:
-        norm = Normalize(vmin=np.nanmin(arr2d), vmax=np.nanmax(arr2d))
-
-    pcm = ax2d.pcolormesh(
-        X,
-        Y,
-        arr2d,
-        shading="auto",
-        cmap="plasma",
-        norm=norm,
-    )
-
-    if rays:
-        plot_rays(ax2d, ray_data, xscale=1e4, yscale=1e4, color="w", lw=0.8)
-
-    # -----------------------
-    # Lineout
+    # Extract lineout first
     # -----------------------
     if line_axis.lower() == "x":
         ix = np.argmin(np.abs(x_cent - line_value))
         line = arr2d[ix, :]
         line_coord = y_cent
+        line_location = x_cent[ix]
 
-        ax2d.axvline(x_cent[ix], color="w", ls="--", lw=1.2)
-        axline.plot(line_coord, line)
-
-        axline.set_ylim([0, 0.00035])
-    
-        axline.set_xlabel(ylabel)
-        axline.set_ylabel(field)
-        axline.set_title(
-            rf"Lineout vs $y$ at $x = {x_cent[ix]:.3f}$ {unit_label}"
-        )
+        line_marker = ("vline", line_location)
+        line_xlabel = ylabel
+        line_title = rf"Lineout vs $y$ at $x = {line_location:.3f}$ {unit_label}"
 
     elif line_axis.lower() == "y":
         iy = np.argmin(np.abs(y_cent - line_value))
         line = arr2d[:, iy]
         line_coord = x_cent
+        line_location = y_cent[iy]
 
-        ax2d.axhline(y_cent[iy], color="w", ls="--", lw=1.2)
-        axline.plot(line_coord, line)
-
-        axline.set_xlabel(xlabel)
-        axline.set_ylabel(field)
-        axline.set_title(
-            rf"Lineout vs $x$ at $y = {y_cent[iy]:.3f}$ {unit_label}"
-        )
+        line_marker = ("hline", line_location)
+        line_xlabel = xlabel
+        line_title = rf"Lineout vs $x$ at $y = {line_location:.3f}$ {unit_label}"
 
     else:
         raise ValueError("line_axis must be either 'x' or 'y'")
 
+    print(f"Lineout axis fixed: {line_axis}")
+    print(f"Requested lineout value: {line_value_um:.3f} microns")
+    print(f"Nearest lineout location used: {line_location:.4f} {unit_label}")
+
+    # -----------------------
+    # 2D display array
+    # -----------------------
+    arr_img, stride = _auto_downsample_2d(arr2d, max_pixels=max_plot_pixels)
+
+    if stride > 1:
+        print(f"Display downsampled by stride {stride}; lineout uses full resolution.")
+
+    finite = arr_img[np.isfinite(arr_img)]
+    positive = finite[finite > 0]
+
+    if finite.size == 0:
+        raise ValueError(f"{field} has no finite values to plot.")
+
+    if log2d and positive.size > 0:
+        vmin = np.nanmin(positive)
+        vmax = np.nanmax(finite)
+        if vmax <= vmin:
+            norm = Normalize(vmin=np.nanmin(finite), vmax=np.nanmax(finite))
+        else:
+            norm = LogNorm(vmin=vmin, vmax=vmax)
+    else:
+        norm = Normalize(vmin=np.nanmin(finite), vmax=np.nanmax(finite))
+
+    # -----------------------
+    # Rays
+    # -----------------------
+    ray_data = read_flash_rays(fp) if rays else None
+
+    # -----------------------
+    # Make figure
+    # -----------------------
+    fig, (ax2d, axline) = plt.subplots(
+        2, 1,
+        figsize=(7, 8),
+        gridspec_kw={"height_ratios": [3, 1]},
+        constrained_layout=True,
+    )
+
+    im = ax2d.imshow(
+        arr_img.T,
+        extent=[x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]],
+        origin="lower",
+        aspect="equal",
+        interpolation="nearest",
+        cmap="plasma",
+        norm=norm,
+    )
+
+    if rays and ray_data is not None:
+        plot_rays(
+            ax2d,
+            ray_data,
+            xscale=ray_scale,
+            yscale=ray_scale,
+            color="w",
+            lw=0.8,
+        )
+
+    if line_marker[0] == "vline":
+        ax2d.axvline(line_marker[1], color="w", ls="--", lw=1.2)
+    else:
+        ax2d.axhline(line_marker[1], color="w", ls="--", lw=1.2)
+
     ax2d.set_xlabel(xlabel)
     ax2d.set_ylabel(ylabel)
     ax2d.set_title(f"{field}, t = {sim_time_ns:.3f} ns")
-    ax2d.set_aspect("equal")
 
-    cbar = fig.colorbar(pcm, ax=ax2d)
+    cbar = fig.colorbar(im, ax=ax2d)
     cbar.set_label(field)
 
+    axline.plot(line_coord, line, lw=2)
+    axline.set_xlabel(line_xlabel)
+    # -------------- Set x-limits ---------------- #
+    axline.set_xlim([200,600])
+    # ------------------------------------------- #
+    if field == "dens":
+        axline.set_ylabel(r"$\rho$ [g/cm$^3$]")
+    elif field == "pres":
+        axline.set_ylabel(r"$P$ [dyn/cm$^2$]")
+    elif field in ["tele", "tion", "trad"]:
+        axline.set_ylabel(r"$T$ [eV]")
+    elif field in ["velx", "vely"]:
+        axline.set_ylabel(r"$v$ [cm/s]")
+    elif field == "depo":
+        axline.set_ylabel(r"$E_{\rm dep}$ [erg/g]")
+    else:
+        axline.set_ylabel(field)
+
+    axline.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+    axline.yaxis.get_offset_text().set_fontsize(11)
+
+    axline.set_title(line_title)
     axline.grid(True, alpha=0.3)
+    axline.set_ylim(0, 1e5)
+    # finite_line = line[np.isfinite(line)]
+    # if finite_line.size > 0:
+    #     ymin = np.nanmin(finite_line)
+    #     ymax = np.nanmax(finite_line)
+    #     if ymin != ymax:
+    #         pad = 0.05 * (ymax - ymin)
+    #         axline.set_ylim(ymin - pad, ymax + pad)
 
     if savePlots:
-        out = saveDir / f"{Path(fp).stem}_{field}_2D_lineout_{line_axis}{line_value_um:.1f}um.png"
-        plt.savefig(out, dpi=200)
+        saveDir = Path(saveDir)
+        saveDir.mkdir(parents=True, exist_ok=True)
+
+        out = saveDir / (
+            f"{Path(fp).stem}_{field}_2D_lineout_"
+            f"{line_axis}{line_value_um:.1f}um.png"
+        )
+        plt.savefig(out, dpi=save_dpi, bbox_inches="tight")
         print(f"Saved {out}")
 
-    plt.show()
+    #plt.show()
+
+    return fig, (ax2d, axline), line_coord, line
+
 
 def read_flash_rays(filename):
     """
@@ -583,3 +658,151 @@ def plot_rays(ax, ray_data, xscale=1.0, yscale=1.0, color="w", lw=1.0):
 
         ax.plot(x, y, color=color, lw=lw, alpha=0.8)
 
+
+def make_ray_diagnostic_figure(
+    ds,
+    fp,
+    ray_data,
+    geometry="cartesian",   # "cartesian" or "cylindrical"
+    useMicrons=True,
+    savePlots=False,
+    saveDir=Path("."),
+):
+    """
+    Ray diagnostic figure:
+      - histogram of stored initial ray powers
+      - title/text box contains:
+          number of stored rays
+          sampled total initial power
+          min/max ray power
+          total deposited energy
+
+    Assumes:
+      ray_data[:, 0] = ray tag
+      ray_data[:, 4] = ray power in erg/s
+      depo has units erg/g
+      dens has units g/cm^3
+    """
+
+    cg, dims = get_covering_grid(ds)
+    sim_time_ns = get_sim_time_ns(ds)
+
+    dens = get_field_array(cg, "flash", "dens")[:, :, 0]
+    depo = get_field_array(cg, "flash", "depo")[:, :, 0]
+
+    nx, ny = dens.shape
+
+    x0, x1 = float(ds.domain_left_edge[0]), float(ds.domain_right_edge[0])
+    y0, y1 = float(ds.domain_left_edge[1]), float(ds.domain_right_edge[1])
+
+    x_edges = np.linspace(x0, x1, nx + 1)
+    y_edges = np.linspace(y0, y1, ny + 1)
+
+    dx = np.diff(x_edges)
+    dy = np.diff(y_edges)
+
+    # ------------------------------------------------------------
+    # Volume / area weighting
+    # ------------------------------------------------------------
+    if geometry.lower() in ["cartesian", "cart"]:
+        # 2D Cartesian: this is energy per unit depth.
+        # Units: erg/cm if depo is erg/g and dens is g/cm^3.
+        dV = dx[:, None] * dy[None, :]
+        Edep_erg = np.nansum(dens * depo * dV)
+        Edep_label = r"$E_{\rm dep}$ per unit depth"
+
+    elif geometry.lower() in ["cylindrical", "cyl", "rz"]:
+        # 2D cylindrical R-Z:
+        # x is r, y is z
+        r_cent = 0.5 * (x_edges[:-1] + x_edges[1:])
+
+        dV = 2.0 * np.pi * r_cent[:, None] * dx[:, None] * dy[None, :]
+        Edep_erg = np.nansum(dens * depo * dV)
+        Edep_label = r"$E_{\rm dep}$"
+
+    else:
+        raise ValueError("geometry must be 'cartesian' or 'cylindrical'.")
+
+    Edep_J = Edep_erg * 1e-7
+
+    # ------------------------------------------------------------
+    # Ray powers
+    # ------------------------------------------------------------
+    tags = ray_data[:, 0]
+    unique_tags = np.unique(tags)
+
+    ray_initial_power_W = []
+
+    for tag in unique_tags:
+        r = ray_data[tags == tag]
+        ray_initial_power_W.append(r[0, 4] * 1e-7)  # erg/s -> W
+
+    ray_initial_power_W = np.array(ray_initial_power_W)
+
+    n_rays = len(unique_tags)
+    sampled_power_TW = np.nansum(ray_initial_power_W) / 1e12
+    pmin = np.nanmin(ray_initial_power_W)
+    pmax = np.nanmax(ray_initial_power_W)
+
+    # ------------------------------------------------------------
+    # Figure
+    # ------------------------------------------------------------
+    fig, ax = plt.subplots(figsize=(7, 5))
+
+    ax.hist(ray_initial_power_W, bins=40)
+
+    ax.set_xlabel("Initial stored ray power [W]")
+    ax.set_ylabel("Number of stored rays")
+
+    if geometry.lower() in ["cartesian", "cart"]:
+        title_geom = "2D Cartesian"
+    else:
+        title_geom = "2D Cylindrical R-Z"
+
+    ax.set_title(
+        f"{title_geom} ray diagnostic, t = {sim_time_ns:.3f} ns\n"
+        f"{Edep_label} = {Edep_J:.3e} J"
+    )
+
+    info_text = (
+        f"stored rays = {n_rays}\n"
+        f"sampled initial power = {sampled_power_TW:.3f} TW\n"
+        f"ray power min = {pmin:.3e} W\n"
+        f"ray power max = {pmax:.3e} W"
+    )
+
+    ax.text(
+        0.98,
+        0.95,
+        info_text,
+        transform=ax.transAxes,
+        ha="right",
+        va="top",
+        bbox=dict(boxstyle="round", facecolor="white", alpha=0.85),
+    )
+
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+
+    if savePlots:
+        saveDir = Path(saveDir)
+        saveDir.mkdir(parents=True, exist_ok=True)
+
+        out = saveDir / f"{Path(fp).stem}_ray_diagnostic_{geometry}.png"
+        plt.savefig(out, dpi=200, bbox_inches="tight")
+        print(f"Saved {out}")
+
+    plt.show()
+
+    return {
+        "fig": fig,
+        "ax": ax,
+        "Edep_erg": Edep_erg,
+        "Edep_J": Edep_J,
+        "n_stored_rays": n_rays,
+        "sampled_power_TW": sampled_power_TW,
+        "ray_power_W": ray_initial_power_W,
+        "ray_power_min_W": pmin,
+        "ray_power_max_W": pmax,
+    }

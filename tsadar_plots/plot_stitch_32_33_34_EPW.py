@@ -47,7 +47,7 @@ def plot_stitch_32_33_34_EPW(data):
     fig1, ax1  = plt.subplots(figsize=(16,13))
     # Error parameters
 
-    window = 5  # rolling window
+    window = 2  # rolling window
     f1_1 = im1["Te_electron"].rolling(window=window).mean()
     f2_1 = im1["ne_electron"].rolling(window=window).mean()
     f1_2 = im2["Te_electron"].rolling(window=window).mean()
@@ -103,8 +103,8 @@ def plot_stitch_32_33_34_EPW(data):
     ax1.set_title('Electron density and temperature')
     ax1.set_xlabel(r"$x (mm)$")
     ax1.set_xlim([2.5, 5.4])
-    ax1.set_ylim([0.0, 0.6])
-    ax1.invert_xaxis()
+    ax1.set_ylim([0.1, 0.8])
+    #ax1.invert_xaxis()
     ax1.set_ylabel(r"$T_{e} (keV)$", color = c1)
     ax1.tick_params(axis='y', colors=c1)
     ax1.spines['left'].set_color(c1)
@@ -142,7 +142,7 @@ def plot_stitch_32_33_34_EPW(data):
                     label='±1σ band')
 
     ax2.set_ylabel(r"$n_{e} (\times 10^{20} cm^{-3})$", color = c2)
-    ax2.set_ylim([0.1, 0.6])
+    ax2.set_ylim([0.0, 0.5])
     ax2.tick_params(axis='y', colors=c2)
     ax2.spines['right'].set_color(c2)
     ax2.spines['right'].set_linewidth(1.5)

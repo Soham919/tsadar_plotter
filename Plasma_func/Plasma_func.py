@@ -326,7 +326,28 @@ def n_photon(lam,E):
     n = E/(h*w)
     return n
 
-
+def super_gaussian(x, A, x0, w, m):
+    """
+    Calculates the super gaussian distribution for given parameters
+    Parameters
+    ----------
+    x : array-like
+        The x values at which to calculate the distribution
+    A : float
+        Amplitude of the distribution
+    x0 : float
+        Center position of the distribution
+    w : float
+        Width parameter of the distribution
+    m : float
+        Exponent parameter of the distribution, m = 1 gives a gaussian, m > 1 gives a super gaussian, m < 1 gives a sub gaussian
+    Returns
+    -------
+    S : array-like
+        The super gaussian distribution evaluated at the input x values
+    """
+    S = A * np.exp(-((x - x0) / w) ** (2*m))
+    return S
 
 if __name__ == "__main__":
     #print(nc(351))
@@ -444,7 +465,7 @@ if __name__ == "__main__":
     # ax.set_title(r"Scattering parameter $\alpha = \frac{1}{k\lambda_D}$")
     # plt.colorbar(im, label=r'$\alpha$', ax=ax)
     # plt.show()
-    r = 5e-5
-    print(1e12/(pi*(r**2)*c*(eps)))
-
+    S = super_gaussian(np.linspace(-1,1,100), A=1, x0=0, w=0.5, m=4)
+    plt.plot(S)
+    plt.show()
     

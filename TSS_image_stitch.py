@@ -1,10 +1,10 @@
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
-import h5_helper
+from h5_helpers.h5_helper import *
 from pathlib import Path
-from TS_aux import shot_data
-from TS_aux import get_calibration
+from tsadar_plots.TS_aux import shot_data
+from tsadar_plots.TS_aux import get_calibration
 
 baseDir = Path().parent.resolve()  # get the parent directory of the current file
 
@@ -90,14 +90,14 @@ for i in range(len(shots)):
 
     if len(shots) == 1:
         ax = [ax]  # make ax a list if there's only one subplot
-    ax[i].pcolormesh(x_iaw[i,:], y_iaw[i,:], iaw[i,:,:], cmap='inferno', shading='auto')
+    ax[i].pcolormesh(x_iaw[i,:], y_iaw[i,:], iaw[i,:,:], cmap='turbo', shading='auto')   # change to iaw/epw if you want to plot the epws
     ax[i].hlines(
     526.5,
     xmin=x_iaw[i,:].min(),
     xmax=x_iaw[i,:].max(),
     color='white',
     linestyle='--',
-    linewidth=1
+    linewidth=2
     )
     ax[i].set_xlim([7.2, 8.6])
     ax[i].set_xlabel("x (mm)")
@@ -105,11 +105,12 @@ for i in range(len(shots)):
 
     #ax[i].set_title(f"Shot {shots[i]}")
 
-# ax[1].set_yticks([])      # removes tick marks
-# ax[1].set_ylabel("")      # removes label
+# Remove some tics for a stitched picture, not needed if plotting just one shot
+#ax[1].set_yticks([])      # removes tick marks
+#ax[1].set_ylabel("")      # removes label
 
-# ax[2].set_yticks([])      # removes tick marks
-# ax[2].set_ylabel("")      # removes label
+#ax[2].set_yticks([])      # removes tick marks
+#ax[2].set_ylabel("")      # removes label
 
 #plt.tight_layout()
 plt.show()

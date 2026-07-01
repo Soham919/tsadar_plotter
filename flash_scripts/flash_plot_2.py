@@ -8,6 +8,8 @@ from flash_helpers import *
 from scipy import constants
 from plotFLASH1d_profiles import *
 from plotFLASH2d_profiles import *
+from plotFLASH2d_profiles_cylindrical_only import *
+from FLASH_ray_diagnostics import *
 import os
 
 eps = constants.epsilon_0 # epislon naught SI
@@ -33,10 +35,10 @@ baseDir = Path().resolve().parent
 # fp = runDir / file
 
 # --------- Windows ------------
-runDir = Path(r"C:\Simulation_data\FLASH\2D\2Dcylindrical_1umSi_1mmSpot")
+runDir = Path(r"C:\Simulation_data\FLASH\2D_Cylindrical\Si3N4\Si3N4_test_3")  # directory containing the FLASH plot files
 
 #target_time_ns = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9]  # ns
-target_time_ns = [0,0.1,0.2,0.3]
+target_time_ns = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]  # ns
 shock_pos = np.zeros(len(target_time_ns))
 files_info = find_nearest_flash_file_from_table(
     target_time_ns,
@@ -55,11 +57,6 @@ saveDir.mkdir(parents=True, exist_ok=True)
 # Ray option
 rays = False
 xlims = None
-
-
-# ============================================================
-# Main loop over requested times
-# ============================================================
 
 # ============================================================
 # Main loop over requested times
@@ -83,7 +80,7 @@ for filename, file_num, matched_time_s, matched_time_ns in files_info:
     print("current_time =", ds.current_time)
     print(f"time = {sim_time_ns:.4f} ns")
 
-    print_fields(ds, ad)
+   #print_fields(ds, ad)   # comment if you don't want to see all the field names and units
 
     cg, dims = get_covering_grid(ds)
 
@@ -120,45 +117,56 @@ for filename, file_num, matched_time_s, matched_time_ns in files_info:
 
     field = "dens"
     
-    # plot_2d_profiles(
-    #     ds,
-    #     fp,
-    #     "flash",
-    #     field,
-    #     useMicrons,
-    #     savePlots,
-    #     saveDir,
-    #     rays
-    # )
+    # ------- For the regular 2D plots --------------- #
+    plot_2d_profiles(
+        ds,
+        fp,
+        "flash",
+        field,
+        useMicrons,
+        savePlots=savePlots,
+        saveDir=saveDir,
+        rays=rays
+    )
     
-    fig, axes, shock_pos[i], shock_result = plotFLASH2d_profiles(ds, "flash", field, useMicrons, savePlots, saveDir, fp, rays=False)
-    i = i+1
+    # -------- For the integrated energy deposition plots --------------- #  
+    # fig, ax, coord, profile = plot_transverse_integrated_depo(
+    # ds,
+    # fp=fp,
+    # geometry="cylindrical",
+    # savePlots=True,
+    # saveDir=saveDir,
+    # )
+
+    # -------- For the purple-green-red color scheme plots --------------- #  
+    #fig, axes, shock_pos[i], shock_result = plotFLASH2d_profiles(ds, "flash", field, useMicrons, savePlots, saveDir, fp, rays=False)
+    
 
     # ============================================================
     # Ray diagnostics
     # ============================================================
 
-    # if rays and ray_data is not None:
-    #     tags = ray_data[:, 0]
+    if rays and ray_data is not None:
+        ray_data = read_flash_rays(fp)
+        fig, ax, bin_centers, yplot, bin_power_W, bin_counts, chosen_trans, chosen_power_W = plot_ray_power_transverse_profile(fp, sim_time_ns, geometry="cylindrical", savePlots=True, saveDir=saveDir)
+        
+        # plot number of rays if you want
+        plt.figure()
+        plt.step(bin_centers, bin_counts, where="mid")
+        plt.xlabel("r [um]")
+        plt.ylabel("Number of rays")
+        plt.show()
 
-    #     unique_tags, counts = np.unique(tags, return_counts=True)
-
-    #     print("Number of rays:", len(unique_tags))
-
-    #     ray_initial_power_W = []
-
-    #     for tag in unique_tags:
-    #         r = ray_data[tags == tag]
-    #         ray_initial_power_W.append(r[0, 4] * 1e-7)
-
-    #     ray_initial_power_W = np.array(ray_initial_power_W)
-
-    #     print("Total initial laser power TW:", ray_initial_power_W.sum() / 1e12)
-    #     print(
-    #         "Initial power per ray W min/max:",
-    #         ray_initial_power_W.min(),
-    #         ray_initial_power_W.max()
-    #     )
+        # diag = make_ray_diagnostic_figure(
+        #     ds,
+        #     fp,
+        #     ray_data,
+        #     geometry="cylindrical",
+        #     savePlots=True,
+        #     saveDir=saveDir,
+        # )
+    
+    i = i+1
 # ============================================================
 # Plot everything one by one
 # ============================================================
@@ -200,4 +208,5 @@ for filename, file_num, matched_time_s, matched_time_ns in files_info:
 # else:
 #     raise ValueError(f"Unsupported detected plot mode: {detectedMode}")
 
-np.save(runDir / "shock_positions.npy", shock_pos)
+# --- Uncomment the following line to save shock positions to a numpy file --- ##
+# np.save(runDir / "shock_positions.npy", shock_pos)

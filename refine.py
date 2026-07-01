@@ -3,9 +3,9 @@ import numpy
 
 nyb = 8 # number of cells per block
 nblocky = 16  # number of blocks in y
-refine = 7  # amr refinement level 
-domain = 5201e-4 # your domain length, cm
-resolve = 1e-4 # what you want to resolve cm
+refine = 4  # amr refinement level 
+domain = 1500e-4 # your domain length, cm
+resolve = 10e-4 # what you want to resolve cm
 x = domain/(nyb*nblocky*(2**(refine-1)))
 ncells = resolve/x
 
