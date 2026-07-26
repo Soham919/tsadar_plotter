@@ -413,6 +413,10 @@ def plot_2d_profiles(
 
     line_axis = "x" -> fixed x, plot vs y
     line_axis = "y" -> fixed y, plot vs x
+
+    Layout:
+      top    : 1D lineout, coordinate horizontal
+      bottom : 2D image, same coordinate horizontal
     """
 
     # -----------------------
@@ -423,14 +427,15 @@ def plot_2d_profiles(
 
     max_plot_pixels = 1200
     save_dpi = 150
-
+    e = 1.6*10**-19  # C
+    kb = 1.38*10**-23  # J/K
     # -----------------------
     # Load data
     # -----------------------
     cg, dims = get_covering_grid(ds)
     sim_time_ns = get_sim_time_ns(ds)
 
-    arr = get_field_array(cg, ftype, field)
+    arr = get_field_array(cg, ftype, field) #*kb/e  # convert from K to eV for temperature fields
     arr2d = np.asarray(arr[:, :, 0])
 
     print(f"{field} 2D shape:", arr2d.shape)
@@ -484,6 +489,13 @@ def plot_2d_profiles(
         line_xlabel = ylabel
         line_title = rf"Lineout vs $y$ at $x = {line_location:.3f}$ {unit_label}"
 
+        # Rotate 2D display so horizontal coordinate is y
+        img_to_plot = arr_img_data = arr2d
+        img_extent = [y_edges[0], y_edges[-1], x_edges[0], x_edges[-1]]
+        img_xlabel = ylabel
+        img_ylabel = xlabel
+        marker_for_img = ("hline", line_location)
+
     elif line_axis.lower() == "y":
         iy = np.argmin(np.abs(y_cent - line_value))
         line = arr2d[:, iy]
@@ -493,6 +505,13 @@ def plot_2d_profiles(
         line_marker = ("hline", line_location)
         line_xlabel = xlabel
         line_title = rf"Lineout vs $x$ at $y = {line_location:.3f}$ {unit_label}"
+
+        # Standard display: horizontal coordinate is x
+        img_to_plot = arr_img_data = arr2d.T
+        img_extent = [x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]]
+        img_xlabel = xlabel
+        img_ylabel = ylabel
+        marker_for_img = ("hline", line_location)
 
     else:
         raise ValueError("line_axis must be either 'x' or 'y'")
@@ -504,7 +523,7 @@ def plot_2d_profiles(
     # -----------------------
     # 2D display array
     # -----------------------
-    arr_img, stride = _auto_downsample_2d(arr2d, max_pixels=max_plot_pixels)
+    arr_img, stride = _auto_downsample_2d(img_to_plot, max_pixels=max_plot_pixels)
 
     if stride > 1:
         print(f"Display downsampled by stride {stride}; lineout uses full resolution.")
@@ -526,25 +545,53 @@ def plot_2d_profiles(
         norm = Normalize(vmin=np.nanmin(finite), vmax=np.nanmax(finite))
 
     # -----------------------
+    # Field label
+    # -----------------------
+    if field == "dens":
+        field_label = r"$\rho$ [g/cm$^3$]"
+    elif field == "pres":
+        field_label = r"$P$ [dyn/cm$^2$]"
+    elif field in ["tele", "tion", "trad"]:
+        field_label = r"$T$ [eV]"
+    elif field in ["velx", "vely"]:
+        field_label = r"$v$ [cm/s]"
+    elif field == "depo":
+        field_label = r"$E_{\rm dep}$ [erg/g]"
+    else:
+        field_label = field
+
+    # -----------------------
     # Rays
     # -----------------------
     ray_data = read_flash_rays(fp) if rays else None
 
     # -----------------------
-    # Make figure
+    # Make figure: lineout top, image bottom
     # -----------------------
-    fig, (ax2d, axline) = plt.subplots(
+    fig, (axline, ax2d) = plt.subplots(
         2, 1,
-        figsize=(7, 8),
-        gridspec_kw={"height_ratios": [3, 1]},
+        figsize=(8, 8),
+        gridspec_kw={"height_ratios": [1, 3]},
         constrained_layout=True,
+        sharex=True,
     )
 
+    # 1D lineout on top
+    axline.plot(line_coord, line, lw=2)
+    axline.set_ylabel(field_label)
+    axline.set_title(line_title)
+    axline.grid(True, alpha=0.3)
+    axline.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+    axline.yaxis.get_offset_text().set_fontsize(11)
+    axline.tick_params(labelbottom=False)
+    axline.set_ylim(0,0.0005)
+
+    # 2D image below
     im = ax2d.imshow(
-        arr_img.T,
-        extent=[x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]],
+        arr_img,
+        extent=img_extent,
         origin="lower",
-        aspect="equal",
+        aspect="auto",
         interpolation="nearest",
         cmap="plasma",
         norm=norm,
@@ -560,49 +607,20 @@ def plot_2d_profiles(
             lw=0.8,
         )
 
-    if line_marker[0] == "vline":
-        ax2d.axvline(line_marker[1], color="w", ls="--", lw=1.2)
+    if marker_for_img[0] == "vline":
+        ax2d.axvline(marker_for_img[1], color="w", ls="--", lw=1.2)
     else:
-        ax2d.axhline(line_marker[1], color="w", ls="--", lw=1.2)
+        ax2d.axhline(marker_for_img[1], color="w", ls="--", lw=1.2)
 
-    ax2d.set_xlabel(xlabel)
-    ax2d.set_ylabel(ylabel)
+    ax2d.set_xlabel(line_xlabel)
+    ax2d.set_ylabel(img_ylabel)
     ax2d.set_title(f"{field}, t = {sim_time_ns:.3f} ns")
 
     cbar = fig.colorbar(im, ax=ax2d)
     cbar.set_label(field)
 
-    axline.plot(line_coord, line, lw=2)
-    axline.set_xlabel(line_xlabel)
-    # -------------- Set x-limits ---------------- #
-    axline.set_xlim([200,600])
-    # ------------------------------------------- #
-    if field == "dens":
-        axline.set_ylabel(r"$\rho$ [g/cm$^3$]")
-    elif field == "pres":
-        axline.set_ylabel(r"$P$ [dyn/cm$^2$]")
-    elif field in ["tele", "tion", "trad"]:
-        axline.set_ylabel(r"$T$ [eV]")
-    elif field in ["velx", "vely"]:
-        axline.set_ylabel(r"$v$ [cm/s]")
-    elif field == "depo":
-        axline.set_ylabel(r"$E_{\rm dep}$ [erg/g]")
-    else:
-        axline.set_ylabel(field)
-
-    axline.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
-    axline.yaxis.get_offset_text().set_fontsize(11)
-
-    axline.set_title(line_title)
-    axline.grid(True, alpha=0.3)
-    axline.set_ylim(0, 1e5)
-    # finite_line = line[np.isfinite(line)]
-    # if finite_line.size > 0:
-    #     ymin = np.nanmin(finite_line)
-    #     ymax = np.nanmax(finite_line)
-    #     if ymin != ymax:
-    #         pad = 0.05 * (ymax - ymin)
-    #         axline.set_ylim(ymin - pad, ymax + pad)
+    # Match lineout coordinate range to image horizontal axis
+    axline.set_xlim(img_extent[0], img_extent[1])
 
     if savePlots:
         saveDir = Path(saveDir)
@@ -614,8 +632,6 @@ def plot_2d_profiles(
         )
         plt.savefig(out, dpi=save_dpi, bbox_inches="tight")
         print(f"Saved {out}")
-
-    #plt.show()
 
     return fig, (ax2d, axline), line_coord, line
 
@@ -806,3 +822,242 @@ def make_ray_diagnostic_figure(
         "ray_power_min_W": pmin,
         "ray_power_max_W": pmax,
     }
+
+def plot_density_lineout(
+    ds,
+    fp,
+    ftype,
+    savePlots=False,
+    saveDir=Path("."),
+):
+    """
+    Plot a 1D FLASH density lineout with material-interface markers.
+
+    Hardcoded lineout choices:
+      line_axis = "x" -> hold x fixed and plot versus y
+      line_axis = "y" -> hold y fixed and plot versus x
+
+    Coordinates are always plotted in microns.
+    """
+
+    # -----------------------
+    # Hardcoded options
+    # -----------------------
+    line_axis = "x"       # "x" or "y"
+    line_value_um = 0
+    save_dpi = 150
+
+    # -----------------------
+    # Load FLASH data
+    # -----------------------
+    cg, _ = get_covering_grid(ds)
+    sim_time_ns = get_sim_time_ns(ds)
+
+    dens2d = np.asarray(
+        get_field_array(cg, ftype, "dens")[:, :, 0]
+    )
+
+    cham2d = np.asarray(
+        get_field_array(cg, ftype, "cham")[:, :, 0]
+    )
+    gas2d = np.asarray(
+        get_field_array(cg, ftype, "gas")[:, :, 0]
+    )
+    targ2d = np.asarray(
+        get_field_array(cg, ftype, "targ")[:, :, 0]
+    )
+
+    # -----------------------
+    # Coordinates in microns
+    # -----------------------
+    x0 = float(ds.domain_left_edge[0])
+    x1 = float(ds.domain_right_edge[0])
+    y0 = float(ds.domain_left_edge[1])
+    y1 = float(ds.domain_right_edge[1])
+
+    nx, ny = dens2d.shape
+
+    x_edges_um = np.linspace(x0, x1, nx + 1) * 1e4
+    y_edges_um = np.linspace(y0, y1, ny + 1) * 1e4
+
+    x_cent_um = 0.5 * (
+        x_edges_um[:-1] + x_edges_um[1:]
+    )
+    y_cent_um = 0.5 * (
+        y_edges_um[:-1] + y_edges_um[1:]
+    )
+
+    # -----------------------
+    # Extract lineouts
+    # -----------------------
+    if line_axis.lower() == "x":
+        index = np.argmin(
+            np.abs(x_cent_um - line_value_um)
+        )
+
+        density_line = dens2d[index, :]
+        cham_line = cham2d[index, :]
+        gas_line = gas2d[index, :]
+        targ_line = targ2d[index, :]
+
+        line_coord = y_cent_um
+        line_location = x_cent_um[index]
+
+        coordinate_label = r"$y$ [$\mu$m]"
+        title = (
+            rf"Density lineout at "
+            rf"$x={line_location:.3f}\ \mu$m, "
+            rf"$t={sim_time_ns:.3f}$ ns"
+        )
+
+    elif line_axis.lower() == "y":
+        index = np.argmin(
+            np.abs(y_cent_um - line_value_um)
+        )
+
+        density_line = dens2d[:, index]
+        cham_line = cham2d[:, index]
+        gas_line = gas2d[:, index]
+        targ_line = targ2d[:, index]
+
+        line_coord = x_cent_um
+        line_location = y_cent_um[index]
+
+        coordinate_label = r"$x$ [$\mu$m]"
+        title = (
+            rf"Density lineout at "
+            rf"$y={line_location:.3f}\ \mu$m, "
+            rf"$t={sim_time_ns:.3f}$ ns"
+        )
+
+    else:
+        raise ValueError(
+            "line_axis must be either 'x' or 'y'."
+        )
+
+    # -----------------------
+    # Find material interfaces
+    # -----------------------
+    fractions = np.vstack(
+        [cham_line, gas_line, targ_line]
+    )
+
+    # 0 = chamber, 1 = gas, 2 = target
+    dominant_species = np.argmax(
+        fractions,
+        axis=0,
+    )
+
+    transition_indices = np.where(
+        np.diff(dominant_species) != 0
+    )[0]
+
+    species_names = {
+        0: "Chamber",
+        1: "Gas",
+        2: "Target",
+    }
+
+    interfaces = []
+
+    for i in transition_indices:
+        position = 0.5 * (
+            line_coord[i] + line_coord[i + 1]
+        )
+
+        left_name = species_names[
+            dominant_species[i]
+        ]
+        right_name = species_names[
+            dominant_species[i + 1]
+        ]
+
+        interfaces.append(
+            (position, f"{left_name}/{right_name}")
+        )
+
+    print(
+        f"Density min/max along lineout: "
+        f"{np.nanmin(density_line):.6e}, "
+        f"{np.nanmax(density_line):.6e}"
+    )
+
+    print("Material interfaces:")
+    for position, label in interfaces:
+        print(f"  {label}: {position:.4f} microns")
+
+    # -----------------------
+    # Plot
+    # -----------------------
+    fig, ax = plt.subplots(
+        figsize=(8, 4.5),
+        constrained_layout=True,
+    )
+
+    ax.plot(
+        line_coord,
+        density_line,
+        linewidth=2,
+        label="Density",
+    )
+
+    for position, label in interfaces:
+        ax.axvline(
+            position,
+            linestyle="--",
+            linewidth=1.5,
+            label=label,
+        )
+
+    ax.set_xlabel(coordinate_label)
+    ax.set_ylabel(r"$\rho$ [g/cm$^3$]")
+    ax.set_title(title)
+    ax.grid(True, alpha=0.3)
+
+    ax.ticklabel_format(
+        axis="y",
+        style="sci",
+        scilimits=(0, 0),
+    )
+
+    if interfaces:
+        # Remove duplicate labels from the legend
+        handles, labels = ax.get_legend_handles_labels()
+        unique = dict(zip(labels, handles))
+
+        ax.legend(
+            unique.values(),
+            unique.keys(),
+            loc="best",
+        )
+    plt.show()
+    # -----------------------
+    # Save
+    # -----------------------
+    if savePlots:
+        saveDir = Path(saveDir)
+        saveDir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        output_path = saveDir / (
+            f"{Path(fp).stem}_density_lineout_"
+            f"{line_axis}{line_value_um:.1f}um.png"
+        )
+
+        fig.savefig(
+            output_path,
+            dpi=save_dpi,
+            bbox_inches="tight",
+        )
+
+        print(f"Saved {output_path}")
+
+    return (
+        fig,
+        ax,
+        line_coord,
+        density_line,
+        interfaces,
+    )

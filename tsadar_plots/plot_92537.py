@@ -7,12 +7,12 @@ import re
 import pandas as pd
 from TS_aux import load_file
 from TS_aux import shot_data
-from Plasma_func.Plasma_func import f_rho
+
 
 def plot_92537(data):
     ### PLOT LEARNED PARAMETERS for H2 AND HE SHOCKS ###
-    im1 = data['92537']['92537_5_nersc.csv']
-    epw = data['92537']['92537_8_nersc.csv']
+    im1 = data['92537-5']['92537_5_nersc.csv']
+    #epw = data['92537']['92537_8_nersc.csv']
 
     # Convert ion fractions to number denisties
 
@@ -85,7 +85,7 @@ def plot_92537(data):
     ax1[1,0].set_title('Fractions')
     ax1[1,0].set_xlabel(r"$x (mm)$")
     ax1[1,0].set_xlim([3.55, 4.75])
-    ax1[1,0].invert_xaxis()
+    #ax1[1,0].invert_xaxis()
     ax1[1,0].set_ylabel(r"$Fraction$")
     ax1[1,0].grid(True)
     ax1[1,0].legend()
@@ -111,7 +111,7 @@ def plot_92537(data):
     ax1[0,1].set_xlabel(r"$x (mm)$")
     ax1[0,1].set_xlim([3.55, 4.75])
     ax1[0,1].set_ylim([0.2, 0.85])
-    ax1[0,1].invert_xaxis()
+    #ax1[0,1].invert_xaxis()
     ax1[0,1].set_ylabel(r"$T_{i} (keV)$")
     ax1[0,1].grid(True)
     ax1[0,1].legend()
@@ -137,7 +137,7 @@ def plot_92537(data):
     ax1[1,1].set_title('Velocities')
     ax1[1,1].set_xlabel(r"$x (mm)$")
     ax1[1,1].set_xlim([3.55, 4.75])
-    ax1[1,1].invert_xaxis()
+    #ax1[1,1].invert_xaxis()
     ax1[1,1].set_ylabel(r"$V_{i} (10^{6} cm/s)$")
     ax1[1,1].grid(True)
     ax1[1,1].legend()

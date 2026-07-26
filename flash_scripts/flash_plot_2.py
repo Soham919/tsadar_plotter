@@ -35,10 +35,10 @@ baseDir = Path().resolve().parent
 # fp = runDir / file
 
 # --------- Windows ------------
-runDir = Path(r"C:\Simulation_data\FLASH\2D_Cylindrical\Si3N4\Si3N4_test_3")  # directory containing the FLASH plot files
+runDir = Path(r"C:\Simulation_data\FLASH\2D_Cylindrical\Si3N4_cyl_5TW_GJS")  # directory containing the FLASH plot files
 
-#target_time_ns = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9]  # ns
-target_time_ns = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]  # ns
+target_time_ns = [0]  # ns
+#target_time_ns = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]  # ns
 shock_pos = np.zeros(len(target_time_ns))
 files_info = find_nearest_flash_file_from_table(
     target_time_ns,
@@ -80,7 +80,7 @@ for filename, file_num, matched_time_s, matched_time_ns in files_info:
     print("current_time =", ds.current_time)
     print(f"time = {sim_time_ns:.4f} ns")
 
-   #print_fields(ds, ad)   # comment if you don't want to see all the field names and units
+    #print_fields(ds, ad)   # comment if you don't want to see all the field names and units
 
     cg, dims = get_covering_grid(ds)
 
@@ -129,6 +129,8 @@ for filename, file_num, matched_time_s, matched_time_ns in files_info:
         rays=rays
     )
     
+    #plot_density_lineout( ds, fp, "flash", savePlots=savePlots, saveDir=saveDir)
+
     # -------- For the integrated energy deposition plots --------------- #  
     # fig, ax, coord, profile = plot_transverse_integrated_depo(
     # ds,

@@ -4,31 +4,32 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import sys
 # ----- Mac -----#
-sys.path.append("/Users/soham/Documents/Kinshock/Scripts")
+#sys.path.append("/Users/soham/Documents/Kinshock/Scripts")
 # ----- Windows -----#
-# sys.path.append(r"\\profiles\Users$\sban\Documents\Scripts")
+sys.path.append(r"\\profiles\Users$\sban\Documents\Scripts")
 from OMEGA.GJS_analyze import GJS_analyze
 from OMEGA.GJS_target_disp import interp_Prz
 from h5_helpers.h5_helper import h5_to_dict
 
 # ------ File Path ------ #
 # ----- Mac ----- #
-baseDir = Path("/Users/soham/Documents/Kinshock")
+#baseDir = Path("/Users/soham/Documents/Kinshock")
 # ---- Windows ----- #
-#baseDir = Path(r"\\profiles\Users$\sban\Documents\Kinshock")
+baseDir = Path(r"\\profiles\Users$\sban\Documents\Kinshock")
 
 fp = baseDir/"Kinshock-26A"/"GasJet"
-file = "D-GJ-C-232_H2He_1500psi.h5"
+file = "D-GJ-C-232_H2He_1500psi.h5"  # file you want to import
 fp = fp/file
 
-r, z, q = GJS_analyze(fp, "density")
+r, z, q = GJS_analyze(fp, "density") 
+q = q*(1300/1500)  # scale to whatever psi
 P_rz, P_xyz = interp_Prz(q, r, z)
 print("r range:", r.min(), r.max())
 print("z range:", z.min(), z.max())
 
 x = np.linspace(-10, 10, 1000)  # mm
 y = np.linspace(-10, 10, 1000)  # mm
-Z = 5  # mm
+Z = 5  #  distance from the nozzle upwards in mm
 
 X, Y = np.meshgrid(x, y)
 
@@ -38,10 +39,10 @@ rho_interp = P_xyz(X, Y, Z)
 outDir = baseDir/"Kinshock-26A"/"GasJet"/"FLASH_tables"
 outDir.mkdir(parents=True, exist_ok=True)
 
-outFile = outDir/"5mm_GJS_densH2He_xy.txt"
+outFile = outDir/"M510mm_1300psi_10mmFoilOffset_GJS_densH2He_xy.txt"
 
 X_cm = X / 10.0  # convert mm to cm
-Y_cm = (Y+5) / 10.0  # convert mm to cm
+Y_cm = (Y+10) / 10.0  # convert mm to cm
 
 with open(outFile, "w") as f:
     f.write("# Gas jet interpolated density table\n")
@@ -60,7 +61,7 @@ print(f"Wrote table to: {outFile}")
 
 fig, ax = plt.subplots(1, 2, figsize=(10, 4))
 
-im = ax[0].pcolormesh(X, Y+8, rho_interp, cmap="viridis", shading="auto")
+im = ax[0].pcolormesh(X, Y+10, rho_interp, cmap="viridis", shading="auto")
 ax[0].axhline(0, color="white", linestyle="--")
 ax[0].set_xlabel("x (mm)")
 ax[0].set_ylabel("y (mm)")

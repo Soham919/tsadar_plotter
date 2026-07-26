@@ -502,7 +502,7 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
 
     ax2d.set_xlabel(xlabel_y)
     ax2d.set_ylabel(xlabel_x)
-    ax2d.set_xlim([2000,3000])
+    #ax2d.set_xlim([5500,7000])
     ax2d.set_title(f"{field}, t = {sim_time_ns:.3f} ns")
 
     cbar = fig.colorbar(
@@ -562,7 +562,7 @@ def plotFLASH2d_profiles(ds, ftype, field, useMicrons,
             ymax *= 1.1
 
         #ax1d.set_ylim(ymin, ymax)
-    ax1d.set_ylim(9e19, 2e20)
+    #ax1d.set_ylim(9e18, 4e20)
     ax1d.set_ylabel(r"$n$ [$cm^{-3}$]")
     ax1d.set_xlabel(xlabel_line)
     ax1d.set_title(line_title)

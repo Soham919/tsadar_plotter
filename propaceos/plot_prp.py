@@ -1,8 +1,11 @@
 import re
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from matplotlib.colors import LogNorm
+sys.path.append(r"\\profiles\Users$\sban\Documents\Scripts")
+from lineout_tool import *
 
 
 float_re = re.compile(r"[-+]?\d*\.\d+E[-+]?\d+|[-+]?\d+E[-+]?\d+|[-+]?\d+\.\d+|[-+]?\d+")
@@ -217,6 +220,21 @@ fp = Path(r"C:\Simulation_data\PROPACEOS\gas_6_EnergyBins\gas_6_EnergyBins.prp")
 table = PropaceosTables(fp)
 table.load_all()
 fig, ax = table.plot("rosseland_int", logz = False)
+
+
+lineout_tool = InteractiveLineout(
+    ax=ax,
+    x=table.T,
+    y=table.ni,
+    data=table.rosseland_int,
+    width=0.1,
+    lineout_label="Internal Energy",
+)
+
 plt.show()
-op = Path(r"C:\Simulation_data\PROPACEOS\gas_6_EnergyBins\gas_6_EnergyBins_stripped.prp")
-table.strip_for_flash(op)
+
+#arr = table.Eint
+#plt.plot(arr[15,:], logy=True)
+#plt.show()
+# op = Path(r"C:\Simulation_data\PROPACEOS\gas_6_EnergyBins\gas_6_EnergyBins_stripped.prp")
+# table.strip_for_flash(op)

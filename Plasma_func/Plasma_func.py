@@ -13,6 +13,7 @@ c = constants.c
 h = constants.h
 
 
+
 def v_th(T,m):
     """
     Calculates the thermal velocity of particle species
@@ -465,7 +466,9 @@ if __name__ == "__main__":
     # ax.set_title(r"Scattering parameter $\alpha = \frac{1}{k\lambda_D}$")
     # plt.colorbar(im, label=r'$\alpha$', ax=ax)
     # plt.show()
-    S = super_gaussian(np.linspace(-1,1,100), A=1, x0=0, w=0.5, m=4)
-    plt.plot(S)
-    plt.show()
+    const = e**2/((c**3)*me*eps)
+    print(const)
+    # S = super_gaussian(np.linspace(-1,1,100), A=1, x0=0, w=0.5, m=4)
+    # plt.plot(S)
+    # plt.show()
     

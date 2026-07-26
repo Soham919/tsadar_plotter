@@ -10,7 +10,7 @@ baseDir = Path().parent.resolve()  # get the parent directory of the current fil
 
 #shot = "117827"  # change this for the shot you want to plot
 ts_type = "imaging" # change this for the type of TS data you want to plot (imaging or time resolved)
-shots = ["117830"]  # change this for the shots you want to plot
+shots = ["92537"]  # change this for the shots you want to plot
 epw = np.zeros((len(shots), 1024, 1024))
 iaw = np.zeros((len(shots), 1024, 1024))
 
@@ -23,7 +23,7 @@ y_iaw = np.zeros((len(shots), 1024))
 i = 0
 for shot in shots:
     # --------- Windows ------------ #
-    fp = baseDir/".."/"Kinshock"/"Kinshock-26A"/"Data"/shot
+    fp = baseDir/".."/"Kinshock"/"Kinshock-19A"/"Data"/shot
     # --------- Mac ------------
     # fp = baseDir/"Kinshock-19A"/"data"/"117828"
 
@@ -66,7 +66,7 @@ for shot in shots:
 
     i = i + 1
 
-fig, ax = plt.subplots(1,len(shots),figsize=(1.25*5*len(shots),5), constrained_layout=True)
+fig, ax = plt.subplots(1,len(shots),figsize=(1.1*5*len(shots),5), constrained_layout=True)
 
 plt.rcParams.update({
     #    "font.family": "serif",             # pick font family
@@ -99,18 +99,23 @@ for i in range(len(shots)):
     linestyle='--',
     linewidth=2
     )
-    ax[i].set_xlim([7.2, 8.6])
+    ax[i].set_xlim([3.55, 4.75])
     ax[i].set_xlabel("x (mm)")
     ax[i].set_ylabel(r"$\lambda (nm)$")
 
     #ax[i].set_title(f"Shot {shots[i]}")
 
-# Remove some tics for a stitched picture, not needed if plotting just one shot
-#ax[1].set_yticks([])      # removes tick marks
-#ax[1].set_ylabel("")      # removes label
+#Remove some tics for a stitched picture, not needed if plotting just one shot
 
-#ax[2].set_yticks([])      # removes tick marks
-#ax[2].set_ylabel("")      # removes label
+ax[0].set_xticks([3.6, 3.8, 4.0, 4.2, 4.4, 4.6])
+
+# ax[1].set_yticks([])      # removes tick marks
+# ax[1].set_ylabel("")      # removes label
+# ax[1].set_xticks([2, 3, 4, 5, 6])
+
+# ax[2].set_yticks([])      # removes tick marks
+# ax[2].set_ylabel("")      # removes label
+# ax[2].set_xticks([3, 4, 5, 6, 7])
 
 #plt.tight_layout()
 plt.show()

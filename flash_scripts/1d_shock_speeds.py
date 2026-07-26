@@ -108,10 +108,12 @@ def sedov_velocity(t, C):
     """
     return (t/C)**(-1/2)
 
-fit = fit_1d_curve(t2D_offset[10:-1], ue3_5mm_offset[10:-1], sedov_velocity, plot=True, xlabel="Time (ns)", ylabel="Shock speed (mm/ns)", title="Sedov-Taylor Fit for 3TW 5mm offset", data_label="3TW 5mm offset", fit_label="Sedov-Taylor Fit")
+fit = fit_1d_curve(t2D_offset[10:-1], ue3_5mm_offset[10:-1], sedov_velocity, plot=True, xlabel="Time (ns)", ylabel="Shock speed (mm/ns)", title="Sedov-Taylor Fit", data_label="Shock speed", fit_label="Sedov-Taylor Fit")
+#fit = fit_1d_curve(t2D_offset[10:-1], ue3_8mm_offset[10:-1], sedov_velocity, plot=True, xlabel="Time (ns)", ylabel="Shock speed (mm/ns)", title="Shock speed vs time", data_label="3TW 8mm offset", fit_label="Sedov-Taylor Fit")
+
 # ------------------------------------------------------------------------------------------------------------------------------ #
 
-#fig, ax = plt.subplots(figsize=(8, 5))
+fig, ax = plt.subplots(figsize=(8, 5))
 
 # ------------ 1D different powers ----------------- #
 # ax.plot(t, tw05, marker="o", label="0.5 TW")
@@ -128,7 +130,7 @@ fit = fit_1d_curve(t2D_offset[10:-1], ue3_5mm_offset[10:-1], sedov_velocity, plo
 # --------- 2D data spot sizes same intensity ---------------- #
 # ax.plot(t2D, e1, marker="o", label="10um 3TW")
 # ax.plot(t2D, e2, marker="o", label="100um 3TW")
-# ax.plot(t2D, e3, marker="o", label="1000um 3TW")
+# ax.plot(t2D, e3, marker="o", label="2D - 3TW")
 # ax.plot(t2D, compare_1d_2d, marker="o", label="1D - 3TW")
 
 # ax.plot(t2D, ue1, marker="o", label="10um 3TW - 2D")
@@ -164,7 +166,7 @@ fit = fit_1d_curve(t2D_offset[10:-1], ue3_5mm_offset[10:-1], sedov_velocity, plo
 # ax.plot(t2D_offset, e3_6_5mm_offset, marker="o", label="6.5mm offset 2D")
 # ax.plot(t2D_offset, e3_5mm_offset, marker="o", label="5mm offset 2D")
 
-# ax.plot(t2D_offset, ue3_8mm_offset, marker="o", label="8mm offset 2D")
+ax.plot(t2D_offset, ue3_8mm_offset, marker="o", label="8mm offset 2D")
 # ax.plot(t2D_offset, ue3_6_5mm_offset, marker="o", label="6.5mm offset 2D")
 # ax.plot(t2D_offset, ue3_5mm_offset, marker="o", label="5mm offset 2D")
 
@@ -184,10 +186,10 @@ fit = fit_1d_curve(t2D_offset[10:-1], ue3_5mm_offset[10:-1], sedov_velocity, plo
 # ax.plot(t2D_offset, u1, color='red', marker="o", markerfacecolor='white', markeredgecolor='red', markersize=7, label=r"8mm offset $\rho/2$")
 # ax.plot(t2D_offset, u2, color='green', marker="o", markerfacecolor='white', markeredgecolor='green', markersize=7, label=r"8mm offset $\rho/4$")
 
-# ax.legend()
-# ax.set_xlabel("Time (ns)")
-# ax.set_ylabel("Shock speed (mm/ns)")
-# #ax.set_ylim(0, 3500)
-# plt.title("Shock speed vs time for different laser spot sizes")
-# ax.grid(True, alpha=0.3)
-# plt.show()
+ax.legend()
+ax.set_xlabel("Time (ns)")
+ax.set_ylabel("Shock speed (mm/ns)")
+#ax.set_ylim(0, 3500)
+plt.title("Shock speed vs time")
+ax.grid(True, alpha=0.3)
+plt.show()

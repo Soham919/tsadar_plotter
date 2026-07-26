@@ -102,10 +102,10 @@ def gamma_t(ion=None, rho0=None, n_e=None, T_e=None, T_i=None):
 
 
 
-log_ne = np.linspace(18, 20.5, num=100)
+log_ne = np.linspace(18, 20, num=100)
 ne = 10**log_ne * u.cm**-3
 T_i = 1*u.eV
-temperatures = [10*u.eV, 25*u.eV, 50*u.eV, 100*u.eV]
+temperatures = [50*u.eV, 100*u.eV, 200*u.eV]
 ion = Particle('p+')
 
 probe_wavelengths = np.array([526.5, 263.25])*u.nm
@@ -114,7 +114,7 @@ probe_pulse = 3.7*u.ns
 probe_fnum = 6.7 # Hansen 2019 mitigation
 probe_area = np.pi*(100*u.um/2)**2
 probe_intensity = (probe_energy/probe_pulse/probe_area).to(u.W/u.cm**2)
-a_Hansen = 1/50
+#a_Hansen = 1/50
 
 
 
@@ -189,7 +189,7 @@ for w, wavelength in enumerate(probe_wavelengths):
                     (ne/nc).to(u.dimensionless_unscaled).value*
                     3/Te.to(u.keV).value*
                     (probe_fnum/8)**2 
-                    )*(a_Hansen)
+                    )
                     
         
         ax.plot(ne.value, FFOM, linestyle=linestyles[t],

@@ -13,7 +13,7 @@ pi = constants.pi # pi
 def gj_n(p):
     p = p*(6894.76)
     V = 150*(10**(-6))  # cylinder volume in m^3
-    T = 300 
+    T = 300
     rho = p/(kb*T) # number density in m^-3
     return rho/(10**6)
 
@@ -40,6 +40,7 @@ def gj_dens(p : float,M : float,D : float,x : float):
     """
     y = 7/5     # adiabatic constant for monoatomic(5/3)/diatommic(7/5) gas
     rho_c = gj_n(p)   # Number dens inside cylinder
+    print(f"rho_c = {rho_c}")
     rho_ex = rho_c/(1+((y-1)/2)*(M**2))**(1/(y-1)) # Number density at nozzle exit
     R = D + 2*(x/M)   # fwhm of gas at distance x away from nozzle 
     rho_x = rho_ex*((D/R)**2)
