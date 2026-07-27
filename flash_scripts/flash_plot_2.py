@@ -30,12 +30,12 @@ A2 = 28 # Si
 baseDir = Path().resolve().parent
 
 # --------- Mac ------------
-# runDir = baseDir / ".." / "Flash" / "test_runs" / "1mmSpot_8mm_offset"
+runDir = baseDir / ".." / "Flash" / "Si3N4_cyl_3TW"
 # file = "ks_hdf5_plt_cnt_0050"
 # fp = runDir / file
 
 # --------- Windows ------------
-runDir = Path(r"C:\Simulation_data\FLASH\2D_Cylindrical\Si3N4_cyl_5TW_GJS")  # directory containing the FLASH plot files
+#runDir = Path(r"C:\Simulation_data\FLASH\2D_Cylindrical\Si3N4\Si3N4_test_3")  # directory containing the FLASH plot files
 
 target_time_ns = [0]  # ns
 #target_time_ns = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]  # ns

@@ -1,0 +1,84 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import sys
+from plasma_chi import *
+
+
+# --------- Probe geometry ---------- #
+probe_wavelength_nm = 526.5
+scattering_angle_deg = 60.0
+
+probe_wavelength_m = probe_wavelength_nm * 1e-9
+scattering_angle_rad = np.deg2rad(scattering_angle_deg)
+
+# Scattering wave number:
+#
+#     k = |k_s - k_0|
+#       = (4 pi / lambda_0) sin(theta / 2)
+#
+k = (4.0 * np.pi / probe_wavelength_m * np.sin(scattering_angle_rad / 2.0))
+
+# ============================================================
+# Frequency axis
+# ============================================================
+
+# Use phase velocity as the plotting variable first.
+#
+# Since omega = k*v_phase, this makes the ion resonances easier
+# to interpret physically.
+phase_velocity = np.linspace(-7.0e7, 7.0e7, 10000)
+
+
+### ------------ Plasma conditions ------------ ##
+ne_cm3 = 2e19  # cm-3
+ne = ne_cm3 * 1.0e6  # cm^-3 -> m^-3
+
+Te_eV = np.linspace(50, 1000, 100) # eV
+TH_eV = 400.0
+THe_eV = 400.0
+
+ud_e = 0.0  # 10^6 cm/s
+ud_H = 0.0
+ud_He = 0.0
+# Ion charge states
+ZH = 1.0    
+ZHe = 2.0
+
+# Ion number fractions:
+#
+#     f_H + f_He = 1
+#
+fH = 0.8
+fHe = 1 - fH
+Zbar = ZH * fH + ZHe * fHe
+
+if not np.isclose(fH + fHe, 1.0):
+    raise ValueError("Ion number fractions must sum to one.")
+
+results = []
+for Te in Te_eV:
+    electron = PlasmaSpecies(name = 'electron', Z = -1, m = me, T_eV = Te, n_cm3 = ne_cm3, ud = ud_e*(10**4))
+    hydrogen = PlasmaSpecies(name = 'hydrogen', Z = ZH, m = mp, T_eV = TH_eV, n_cm3 = fH * (ne_cm3 / Zbar), ud = ud_H*(10**4))
+    helium = PlasmaSpecies(name = 'helium', Z = ZHe, m = 4.0 * mp, T_eV = THe_eV, n_cm3 = fHe * (ne_cm3 / Zbar), ud = ud_He*(10**4))
+    ions  = [hydrogen, helium]
+
+    # ============================================================
+    # Calculate everything
+    # ============================================================
+
+    Result = thomson_structure_factor(k=k, phase_velocity = phase_velocity, electron = electron, ions = ions)
+    results.append(Result)
+
+spectra = np.array([result["S_total"] for result in results])
+
+# ============================================================
+# Plotting
+# ============================================================
+
+ion_mask = np.abs(phase_velocity) <= 1.0e6
+
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.pcolormesh(phase_velocity[ion_mask]/10**4, Te_eV, spectra[:, ion_mask], shading='auto', cmap='viridis')
+ax.set_xlabel('Phase Velocity (10^6 cm/s)')
+ax.set_ylabel('Electron Temperature (eV)')
+plt.show()
