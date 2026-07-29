@@ -342,16 +342,16 @@ if __name__ == "__main__":
     )
 
     # Plasma conditions
-    ne_cm3 = 2.19e19  # cm-3
+    ne_cm3 = 2.0e19  # cm-3
     ne = ne_cm3 * 1.0e6  # cm^-3 -> m^-3
 
-    Te_eV = 245.0  # eV
-    TH_eV = 614.0
-    THe_eV = 386.0
+    Te_eV = 500.0  # eV
+    TH_eV = 400.0
+    THe_eV = 400.0
 
     ud_e = 0.0  # 10^6 cm/s
-    ud_H = 28.52
-    ud_He = 32.3
+    ud_H = 0
+    ud_He = 0
     # Ion charge states
     ZH = 1.0    
     ZHe = 2.0
@@ -360,8 +360,8 @@ if __name__ == "__main__":
     #
     #     f_H + f_He = 1
     #
-    fH = 0.55
-    fHe = 0.45
+    fH = 0.2
+    fHe = 0.8
     Zbar = ZH * fH + ZHe * fHe
 
     if not np.isclose(fH + fHe, 1.0):

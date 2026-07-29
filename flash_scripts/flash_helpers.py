@@ -392,248 +392,356 @@ def plot_1d_profiles(ds, fields, sim_time_ns, useMicrons, savePlots, saveDir, fp
 
 
 def _auto_downsample_2d(arr, max_pixels=1200):
+    """
+    Downsample a 2D array for display only.
+    The full-resolution array remains available for lineouts.
+    """
     n0, n1 = arr.shape
-    stride = max(1, int(np.ceil(max(n0, n1) / max_pixels)))
+    stride = max(1, int(np.ceil(max(n0, n1) / max_pixels)),)
     return arr[::stride, ::stride], stride
 
 
-def plot_2d_profiles(
+def plot_2d_with_lineout(
     ds,
     fp,
     ftype,
     field,
+    lineout_dir="x",
+    lineout_pos=0.0,
     useMicrons=True,
-    savePlots=False,
+    savePlot=True,
     saveDir=Path("."),
-    rays=False,
-    log2d=True,
+    max_plot_pixels=1200,
 ):
     """
-    Fast plot of one FLASH 2D field + one lineout.
+    Plot one FLASH field, a full-resolution lineout, and material fractions.
 
-    line_axis = "x" -> fixed x, plot vs y
-    line_axis = "y" -> fixed y, plot vs x
+    Parameters
+    ----------
+    ds
+        Loaded yt FLASH dataset.
 
-    Layout:
-      top    : 1D lineout, coordinate horizontal
-      bottom : 2D image, same coordinate horizontal
+    fp
+        Path to the FLASH plotfile.
+
+    ftype
+        FLASH field type passed to get_field_array().
+
+    field
+        FLASH field name to plot.
+
+    lineout_dir : {"x", "y"}
+        Coordinate held fixed.
+
+        lineout_dir="x":
+            Hold x fixed at lineout_pos and plot versus y.
+
+        lineout_dir="y":
+            Hold y fixed at lineout_pos and plot versus x.
+
+    lineout_pos : float
+        Requested lineout position.
+
+        In microns when useMicrons=True.
+        In cm when useMicrons=False.
+
+    useMicrons : bool
+        Convert spatial coordinates from cm to microns.
+
+    savePlot : bool
+        Save the figure.
+
+    saveDir
+        Directory where the figure is saved.
+
+    max_plot_pixels : int
+        Maximum approximate pixel count along the longest dimension
+        of the displayed 2D image.
+
+        This affects only the image. Lineouts remain full resolution.
+
+    Returns
+    -------
+    fig, axes, line_data
+        axes = (ax_line, ax_2d, ax_fraction)
+
+        line_data is a dictionary containing the extracted lineouts.
     """
 
-    # -----------------------
-    # Hardcoded lineout choice
-    # -----------------------
-    line_axis = "x"       # "x" or "y"
-    line_value_um = 0.0
+    lineout_dir = lineout_dir.lower()
 
-    max_plot_pixels = 1200
-    save_dpi = 150
-    e = 1.6*10**-19  # C
-    kb = 1.38*10**-23  # J/K
-    # -----------------------
-    # Load data
-    # -----------------------
+    if lineout_dir not in {"x", "y"}:
+        raise ValueError(
+            "lineout_dir must be either 'x' or 'y'."
+        )
+
+    # ==========================================================
+    # Load covering grid and requested field
+    # ==========================================================
     cg, dims = get_covering_grid(ds)
     sim_time_ns = get_sim_time_ns(ds)
 
-    arr = get_field_array(cg, ftype, field) #*kb/e  # convert from K to eV for temperature fields
+    arr = get_field_array(cg, ftype, field,)
+
     arr2d = np.asarray(arr[:, :, 0])
 
-    print(f"{field} 2D shape:", arr2d.shape)
-    print(f"{field} min/max:", np.nanmin(arr2d), np.nanmax(arr2d))
-
-    # -----------------------
-    # Coordinates
-    # -----------------------
-    x0, x1 = float(ds.domain_left_edge[0]), float(ds.domain_right_edge[0])
-    y0, y1 = float(ds.domain_left_edge[1]), float(ds.domain_right_edge[1])
+    if arr2d.ndim != 2:
+        raise ValueError(f"Expected a 2D field array, got shape {arr2d.shape}.")
 
     nx, ny = arr2d.shape
 
-    x_edges_cm = np.linspace(x0, x1, nx + 1)
-    y_edges_cm = np.linspace(y0, y1, ny + 1)
+    print(f"{field} shape:", arr2d.shape)
+
+    # ==========================================================
+    # Coordinate arrays
+    #
+    # FLASH spatial coordinates are assumed to be in cm.
+    # ==========================================================
+    x0_cm = float(ds.domain_left_edge[0])
+    x1_cm = float(ds.domain_right_edge[0])
+
+    y0_cm = float(ds.domain_left_edge[1])
+    y1_cm = float(ds.domain_right_edge[1])
+
+    x_edges_cm = np.linspace( x0_cm, x1_cm, nx + 1,)
+
+    y_edges_cm = np.linspace( y0_cm, y1_cm, ny + 1,)
 
     x_cent_cm = 0.5 * (x_edges_cm[:-1] + x_edges_cm[1:])
+
     y_cent_cm = 0.5 * (y_edges_cm[:-1] + y_edges_cm[1:])
 
     if useMicrons:
-        x_edges = x_edges_cm * 1e4
-        y_edges = y_edges_cm * 1e4
-        x_cent = x_cent_cm * 1e4
-        y_cent = y_cent_cm * 1e4
-        line_value = line_value_um
-        xlabel = r"$x$ [$\mu$m]"
-        ylabel = r"$y$ [$\mu$m]"
-        unit_label = r"$\mu$m"
-        ray_scale = 1e4
+        coordinate_scale = 1.0e4
+        coordinate_unit = r"$\mu$m"
+
+        x_edges = x_edges_cm * coordinate_scale
+        y_edges = y_edges_cm * coordinate_scale
+
+        x_cent = x_cent_cm * coordinate_scale
+        y_cent = y_cent_cm * coordinate_scale
     else:
+        coordinate_scale = 1.0
+        coordinate_unit = "cm"
+
         x_edges = x_edges_cm
         y_edges = y_edges_cm
+
         x_cent = x_cent_cm
         y_cent = y_cent_cm
-        line_value = line_value_um * 1e-4
-        xlabel = r"$x$ [cm]"
-        ylabel = r"$y$ [cm]"
-        unit_label = "cm"
-        ray_scale = 1.0
 
-    # -----------------------
-    # Extract lineout first
-    # -----------------------
-    if line_axis.lower() == "x":
-        ix = np.argmin(np.abs(x_cent - line_value))
-        line = arr2d[ix, :]
-        line_coord = y_cent
-        line_location = x_cent[ix]
+    print(f"x domain: {x_edges[0]:.6g} to " f"{x_edges[-1]:.6g} {coordinate_unit}")
 
-        line_marker = ("vline", line_location)
-        line_xlabel = ylabel
-        line_title = rf"Lineout vs $y$ at $x = {line_location:.3f}$ {unit_label}"
+    print(f"y domain: {y_edges[0]:.6g} to " f"{y_edges[-1]:.6g} {coordinate_unit}")
 
-        # Rotate 2D display so horizontal coordinate is y
-        img_to_plot = arr_img_data = arr2d
-        img_extent = [y_edges[0], y_edges[-1], x_edges[0], x_edges[-1]]
-        img_xlabel = ylabel
-        img_ylabel = xlabel
-        marker_for_img = ("hline", line_location)
+    # ==========================================================
+    # Extract requested field lineout
+    # ==========================================================
+    if lineout_dir == "x":
+        # Fixed x, lineout versus y
+        line_index = int(np.argmin(np.abs(x_cent - lineout_pos)))
 
-    elif line_axis.lower() == "y":
-        iy = np.argmin(np.abs(y_cent - line_value))
-        line = arr2d[:, iy]
-        line_coord = x_cent
-        line_location = y_cent[iy]
+        field_line = np.asarray(arr2d[line_index, :])
 
-        line_marker = ("hline", line_location)
-        line_xlabel = xlabel
-        line_title = rf"Lineout vs $x$ at $y = {line_location:.3f}$ {unit_label}"
+        line_coordinate = y_cent
+        line_location = x_cent[line_index]
 
-        # Standard display: horizontal coordinate is x
-        img_to_plot = arr_img_data = arr2d.T
-        img_extent = [x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]]
-        img_xlabel = xlabel
-        img_ylabel = ylabel
-        marker_for_img = ("hline", line_location)
+        line_xlabel = rf"$y$ [{coordinate_unit}]"
+
+        line_title = (rf"{field} lineout at " rf"$x={line_location:.3f}$ {coordinate_unit}")
+
+        # Array indexing is arr2d[x_index, y_index].
+        # imshow rows therefore represent x and columns represent y.
+        image_array = arr2d
+
+        image_extent = [y_edges[0], y_edges[-1], x_edges[0], x_edges[-1],]
+
+        image_xlabel = rf"$y$ [{coordinate_unit}]"
+        image_ylabel = rf"$x$ [{coordinate_unit}]"
+
+        marker_type = "horizontal"
 
     else:
-        raise ValueError("line_axis must be either 'x' or 'y'")
+        # Fixed y, lineout versus x
+        line_index = int(np.argmin(np.abs(y_cent - lineout_pos)))
 
-    print(f"Lineout axis fixed: {line_axis}")
-    print(f"Requested lineout value: {line_value_um:.3f} microns")
-    print(f"Nearest lineout location used: {line_location:.4f} {unit_label}")
+        field_line = np.asarray(arr2d[:, line_index])
 
-    # -----------------------
-    # 2D display array
-    # -----------------------
-    arr_img, stride = _auto_downsample_2d(img_to_plot, max_pixels=max_plot_pixels)
+        line_coordinate = x_cent
+        line_location = y_cent[line_index]
+
+        line_xlabel = rf"$x$ [{coordinate_unit}]"
+
+        line_title = (rf"{field} lineout at " rf"$y={line_location:.3f}$ {coordinate_unit}")
+
+        # Transpose so the horizontal coordinate is x.
+        image_array = arr2d.T
+
+        image_extent = [x_edges[0], x_edges[-1], y_edges[0], y_edges[-1],]
+
+        image_xlabel = rf"$x$ [{coordinate_unit}]"
+        image_ylabel = rf"$y$ [{coordinate_unit}]"
+
+        marker_type = "horizontal"
+
+    print(f"Requested {lineout_dir} position: " f"{lineout_pos:.6g} {coordinate_unit}")
+
+    print(f"Nearest cell center used: " f"{line_location:.6g} {coordinate_unit}")
+
+    # ==========================================================
+    # Material-fraction lineouts
+    # ==========================================================
+    cham2d = np.asarray(get_field_array(cg, ftype, "cham",)[:, :, 0])
+
+    gas2d = np.asarray(get_field_array(cg, ftype, "gas",)[:, :, 0])
+
+    targ2d = np.asarray(get_field_array(cg, ftype, "targ",)[:, :, 0])
+
+    expected_shape = arr2d.shape
+
+    for name, species_array in {"cham": cham2d, "gas": gas2d, "targ": targ2d,}.items():
+        if species_array.shape != expected_shape:
+            raise ValueError(
+                f"{name} has shape {species_array.shape}, "
+                f"but {field} has shape {expected_shape}."
+            )
+
+    if lineout_dir == "x":
+        chamber_line = cham2d[line_index, :]
+        gas_line = gas2d[line_index, :]
+        target_line = targ2d[line_index, :]
+    else:
+        chamber_line = cham2d[:, line_index]
+        gas_line = gas2d[:, line_index]
+        target_line = targ2d[:, line_index]
+
+    # ==========================================================
+    # Downsample only the displayed image
+    # ==========================================================
+    image_downsampled, stride = _auto_downsample_2d(image_array, max_pixels=max_plot_pixels,)
 
     if stride > 1:
-        print(f"Display downsampled by stride {stride}; lineout uses full resolution.")
+        print(f"2D image downsampled by stride {stride}; " "lineouts use full resolution.")
 
-    finite = arr_img[np.isfinite(arr_img)]
+    finite = image_downsampled[np.isfinite(image_downsampled)]
+
+    finite = image_downsampled[np.isfinite(image_downsampled)]
     positive = finite[finite > 0]
 
     if finite.size == 0:
-        raise ValueError(f"{field} has no finite values to plot.")
+        raise ValueError(
+            f"{field} has no finite values to plot."
+        )
 
-    if log2d and positive.size > 0:
+    # Use logarithmic scaling whenever possible
+    if positive.size > 0:
         vmin = np.nanmin(positive)
         vmax = np.nanmax(finite)
+
         if vmax <= vmin:
-            norm = Normalize(vmin=np.nanmin(finite), vmax=np.nanmax(finite))
+            norm = Normalize(vmin=np.nanmin(finite),vmax=np.nanmax(finite),)
         else:
-            norm = LogNorm(vmin=vmin, vmax=vmax)
+            norm = LogNorm(vmin=vmin,vmax=vmax,)
+
     else:
-        norm = Normalize(vmin=np.nanmin(finite), vmax=np.nanmax(finite))
-
-    # -----------------------
-    # Field label
-    # -----------------------
-    if field == "dens":
-        field_label = r"$\rho$ [g/cm$^3$]"
-    elif field == "pres":
-        field_label = r"$P$ [dyn/cm$^2$]"
-    elif field in ["tele", "tion", "trad"]:
-        field_label = r"$T$ [eV]"
-    elif field in ["velx", "vely"]:
-        field_label = r"$v$ [cm/s]"
-    elif field == "depo":
-        field_label = r"$E_{\rm dep}$ [erg/g]"
-    else:
-        field_label = field
-
-    # -----------------------
-    # Rays
-    # -----------------------
-    ray_data = read_flash_rays(fp) if rays else None
-
-    # -----------------------
-    # Make figure: lineout top, image bottom
-    # -----------------------
-    fig, (axline, ax2d) = plt.subplots(
-        2, 1,
-        figsize=(8, 8),
-        gridspec_kw={"height_ratios": [1, 3]},
+        norm = Normalize(vmin=np.nanmin(finite),vmax=np.nanmax(finite),)
+    # ==========================================================
+    # Figure
+    # ==========================================================
+    fig, (ax_2d, ax_line, ax_fraction,) = plt.subplots(3,1,figsize=(9, 11),
+        gridspec_kw={"height_ratios": [3.0, 1.0, 1.0],},
         constrained_layout=True,
-        sharex=True,
     )
 
-    # 1D lineout on top
-    axline.plot(line_coord, line, lw=2)
-    axline.set_ylabel(field_label)
-    axline.set_title(line_title)
-    axline.grid(True, alpha=0.3)
-    axline.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
-    axline.yaxis.get_offset_text().set_fontsize(11)
-    axline.tick_params(labelbottom=False)
-    axline.set_ylim(0,0.0005)
-
-    # 2D image below
-    im = ax2d.imshow(
-        arr_img,
-        extent=img_extent,
+    # ==========================================================
+    # Panel 1: 2D field
+    # ==========================================================
+    im = ax_2d.imshow(
+        image_downsampled,
         origin="lower",
-        aspect="auto",
+        extent=image_extent,
+        aspect="equal",
         interpolation="nearest",
         cmap="plasma",
-        norm=norm,
+        norm = norm,
+        rasterized=True,
     )
 
-    if rays and ray_data is not None:
-        plot_rays(
-            ax2d,
-            ray_data,
-            xscale=ray_scale,
-            yscale=ray_scale,
-            color="w",
-            lw=0.8,
-        )
+    ax_2d.set_xlabel(image_xlabel)
+    ax_2d.set_ylabel(image_ylabel)
+    ax_2d.set_title(f"{field}, t = {sim_time_ns:.3f} ns")
 
-    if marker_for_img[0] == "vline":
-        ax2d.axvline(marker_for_img[1], color="w", ls="--", lw=1.2)
+    if marker_type == "horizontal":
+        ax_2d.axhline(line_location,linestyle="--",linewidth=1.2,color="white",)
     else:
-        ax2d.axhline(marker_for_img[1], color="w", ls="--", lw=1.2)
+        ax_2d.axvline(line_location,linestyle="--",linewidth=1.2,color="white",)
 
-    ax2d.set_xlabel(line_xlabel)
-    ax2d.set_ylabel(img_ylabel)
-    ax2d.set_title(f"{field}, t = {sim_time_ns:.3f} ns")
+    colorbar = fig.colorbar(im,ax=ax_2d,fraction=0.035,pad=0.02,shrink=0.75,aspect=25,)
+    colorbar.set_label(field)
 
-    cbar = fig.colorbar(im, ax=ax2d)
-    cbar.set_label(field)
+    # ==========================================================
+    # Panel 2: field lineout
+    # ==========================================================
+    ax_line.plot(line_coordinate, field_line, linewidth=2,)
+    ax_line.set_ylabel(field)
+    ax_line.set_title(line_title)
+    ax_line.grid(True,alpha=0.3,)
+    ax_line.tick_params(axis="x",labelbottom=False,)
 
-    # Match lineout coordinate range to image horizontal axis
-    axline.set_xlim(img_extent[0], img_extent[1])
+    ax_line.ticklabel_format(axis="y",style="sci",scilimits=(0, 0),)
 
-    if savePlots:
+    # ==========================================================
+    # Panel 3: material fractions
+    # ==========================================================
+    ax_fraction.plot(line_coordinate,chamber_line,linewidth=2,label="Chamber",)
+    ax_fraction.plot(line_coordinate,gas_line,linewidth=2,label="Gas",)
+    ax_fraction.plot(line_coordinate,target_line,linewidth=2,label="Target",)
+
+    ax_fraction.set_xlabel(line_xlabel)
+    ax_fraction.set_ylabel("Fraction")
+    ax_fraction.set_title("Material fractions")
+    ax_fraction.set_ylim(-0.05,1.05,)
+    ax_fraction.grid(True,alpha=0.3,)
+    ax_fraction.legend(loc="best",frameon=False,)
+
+    # Match the horizontal ranges of the two lineout panels.
+    line_min = line_coordinate[0]
+    line_max = line_coordinate[-1]
+    ax_line.set_xlim(line_min,line_max,)
+    ax_fraction.set_xlim(line_min,line_max,)
+
+    # ==========================================================
+    # Save
+    # ==========================================================
+    if savePlot:
         saveDir = Path(saveDir)
-        saveDir.mkdir(parents=True, exist_ok=True)
 
-        out = saveDir / (
-            f"{Path(fp).stem}_{field}_2D_lineout_"
-            f"{line_axis}{line_value_um:.1f}um.png"
+        saveDir.mkdir(parents=True,exist_ok=True,)
+
+        unit_suffix = ("um" if useMicrons else "cm")
+
+        output_path = saveDir / (
+            f"{Path(fp).stem}_{field}_"
+            f"{lineout_dir}_{lineout_pos:g}{unit_suffix}.png"
         )
-        plt.savefig(out, dpi=save_dpi, bbox_inches="tight")
-        print(f"Saved {out}")
 
-    return fig, (ax2d, axline), line_coord, line
+        fig.savefig(output_path,dpi=150,bbox_inches="tight",)
+        print(f"Saved {output_path}")
+
+    line_data = {
+        "coordinate": line_coordinate,
+        "field": field_line,
+        "chamber": chamber_line,
+        "gas": gas_line,
+        "target": target_line,
+        "lineout_dir": lineout_dir,
+        "requested_position": lineout_pos,
+        "actual_position": line_location,
+        "useMicrons": useMicrons,
+        "display_stride": stride,
+    }
+
+    return (fig,(ax_line, ax_2d, ax_fraction),line_data,)
 
 
 def read_flash_rays(filename):

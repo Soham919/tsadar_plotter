@@ -6,9 +6,9 @@ from scipy import constants
 from Omega60_func import gj_dens, gj_n
 import sys
 # ----- Mac -----#
-#sys.path.append("/Users/soham/Documents/Kinshock/Scripts")
+sys.path.append("/Users/soham/Documents/Kinshock/Scripts")
 # ----- Windows -----#
-sys.path.append(r"\\profiles\Users$\sban\Documents\Scripts")
+#sys.path.append(r"\\profiles\Users$\sban\Documents\Scripts")
 from h5_helpers.h5_helper import h5_to_dict
 
 #--------- Constants ---------- #

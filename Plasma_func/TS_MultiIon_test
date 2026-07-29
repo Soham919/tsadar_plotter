@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+sys.path.append("/Users/soham/Documents/Kinshock/Scripts")
 from plasma_chi import *
-
+from lineout_tool import InteractiveLineout
 
 # --------- Probe geometry ---------- #
 probe_wavelength_nm = 526.5
@@ -81,4 +82,15 @@ fig, ax = plt.subplots(figsize=(8, 6))
 ax.pcolormesh(phase_velocity[ion_mask]/10**4, Te_eV, spectra[:, ion_mask], shading='auto', cmap='viridis')
 ax.set_xlabel('Phase Velocity (10^6 cm/s)')
 ax.set_ylabel('Electron Temperature (eV)')
+
+lineout_tool = InteractiveLineout(
+    ax=ax,
+    x=phase_velocity[ion_mask]/10**4,
+    y=Te_eV,
+    data=spectra[:, ion_mask],
+    width=0.1,
+    lineout_label="random function",
+)
+
 plt.show()
+
