@@ -9,6 +9,42 @@ me = constants.electron_mass # mass electron(kg)
 mp = constants.proton_mass # mass of H(kg)
 pi = constants.pi # pi
 
+def heater_Te(n_e, I, t, lam, Z, r_spot):
+    """
+    Calculate the electron temperature in eV for a laser-heated plasma.
+
+    Parameters
+    ----------
+    n_e : float
+        Electron number density in cm^-3.
+    E : float
+        Laser energy in J.
+    t : float
+        Pulse duration in ns.
+    lam : float
+        Laser wavelength in nm.
+    Z : float
+        Ionization degree.
+    r_spot : float
+        Laser spot radius in cm.
+
+    Returns
+    -------
+    Te : float
+        Electron temperature in eV.
+    """
+    # Convert n_e from cm^-3 to m^-3 for SI units
+    ne_m3 = n_e * 1e6  # cm^-3 to m^-3
+    lam = lam * 1e-9  # Convert nm to m
+    t_s = t * 1e-9  # Convert pulse duration to seconds
+    I = I * 1e12 * 1e4  # Convert from TW/cm^2 to W/m^2
+    # P = E / t_s  # Laser power in W
+    # I = P / (pi * r_spot**2)  # Laser intensity in W/m^2
+    # Calculate the electron temperature using the formula
+    Te = (I * Z * ne_m3 * (lam**2) * t_s)**(2/5)
+    Te = Te / e  # Convert from J to eV
+
+    return Te
 
 def gj_n(p):
     p = p*(6894.76)
@@ -47,6 +83,9 @@ def gj_dens(p : float,M : float,D : float,x : float):
     return rho_x
 
 
+
+Te = heater_Te(n_e=6e18, I=1400, t=1e-9, lam=800, Z=1, r_spot=0.01)
+print(f"Electron temperature: {Te:.2f} eV")
 # y = 2
 # M = 2
 # rho_c = 1

@@ -44,6 +44,7 @@ if __name__ == "__main__":
     fp = fp/file
 
     r, z, q = GJS_analyze(fp, "density")
+    q = q*(1300/1500)  # scale to 1300 psi
     # ------ Plot -------- #
 
     ## Density contours at specific z/r locations

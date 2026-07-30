@@ -282,7 +282,7 @@ def power_calc(n,E,t,A):
     P = P*1e-16 # TW/cm2
     return P
 
-print(power_calc(1,10,100,pi*(0.01)**2))
+
 def disp_EPW(ne, Te, k):
     """
     Calculates the electron plasma wave frequency and Landau damping rate based on GnB eq (8.3.18), (8.3.19)
@@ -351,6 +351,8 @@ def super_gaussian(x, A, x0, w, m):
     return S
 
 if __name__ == "__main__":
+
+    print(power_calc(13,189,500,pi*(714e-4)**2))
     #print(nc(351))
     #plt.plot(x,RH_T(x))
     #plt.show()
@@ -466,8 +468,8 @@ if __name__ == "__main__":
     # ax.set_title(r"Scattering parameter $\alpha = \frac{1}{k\lambda_D}$")
     # plt.colorbar(im, label=r'$\alpha$', ax=ax)
     # plt.show()
-    const = e**2/((c**3)*me*eps)
-    print(const)
+    # const = e**2/((c**3)*me*eps)
+    # print(const)
     # S = super_gaussian(np.linspace(-1,1,100), A=1, x0=0, w=0.5, m=4)
     # plt.plot(S)
     # plt.show()

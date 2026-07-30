@@ -10,7 +10,7 @@ from TS_aux import load_file
 from TS_aux import shot_data
 
 def plot_92537_EPW(data):
-    lp = data['92537']['92537_8_nersc.csv']
+    lp = data['92537-8']['92537_8_nersc.csv']
     r = shot_data.loc[92537,"pointing"] - lp["Radius (\\mum)"]/10**3
     bv = (r*10**2)/shot_data.loc[92537,"timing"]
     ## Ti, Va, fract plot for all 3 species 
@@ -56,7 +56,7 @@ def plot_92537_EPW(data):
     ax1.set_xlabel(r"$x (mm)$")
     ax1.set_xlim([3.55, 4.75])
     #ax1[1,1].set_ylim([0.22, 0.4])
-    ax1.invert_xaxis()
+    #ax1.invert_xaxis()
     ax1.set_ylabel(r"$T_{e} (keV)$", color = c1)
     ax1.tick_params(axis='y', colors=c1)
     ax1.spines['left'].set_color(c1)

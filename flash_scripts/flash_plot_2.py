@@ -20,8 +20,7 @@ mp = constants.proton_mass # mass of H(kg)
 pi = constants.pi # pi
 c = constants.c
 h = constants.h
-A1 = 1 # H
-A2 = 28 # Si
+
 
 # ============================================================
 # User options
@@ -35,10 +34,10 @@ runDir = baseDir / ".." / "Flash" / "2DCylindrical"/"Si3N4_cyl_5TW_1300psiGJS"
 # fp = runDir / file
 
 # --------- Windows ------------
-#runDir = Path(r"C:\Simulation_data\FLASH\2D_Cylindrical\Si3N4\Si3N4_test_3")  # directory containing the FLASH plot files
+runDir = Path(r"C:\Simulation_data\FLASH\2D_Cylindrical\Si3N4_cyl_5TW_1300psiGJS")  # directory containing the FLASH plot files
 
 #target_time_ns = [0]  # ns
-target_time_ns = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,3,4,5,6,7,8,9,9.5]  # ns
+target_time_ns = [0.8]  # ns
 shock_pos = np.zeros(len(target_time_ns))
 files_info = find_nearest_flash_file_from_table(
     target_time_ns,
@@ -115,7 +114,7 @@ for filename, file_num, matched_time_s, matched_time_ns in files_info:
     # Comment/uncomment this block for 2D
     # ============================================================
 
-    field = "dens"
+    field = "tion"  # field to plot in 2D
     
     # ------- For the regular 2D plots --------------- #
     plot_2d_with_lineout(
@@ -123,15 +122,14 @@ for filename, file_num, matched_time_s, matched_time_ns in files_info:
         fp,
         "flash",
         field,
-        lineout_dir="x",
-        lineout_pos=1000.0,
-        useMicrons=useMicrons,
+        lineout_dir = "x",
+        lineout_pos = 0,
+        useMicrons = useMicrons,
         savePlot=savePlots,
         saveDir=saveDir,
-        max_plot_pixels=1200
     )
     
-    #plot_density_lineout( ds, fp, "flash", savePlots=savePlots, saveDir=saveDir)
+    #plot_density_and_species( ds, fp, "flash", line_axis="x", line_value_um=0, useMicrons=useMicrons, savePlots=savePlots, saveDir=saveDir)
 
     # -------- For the integrated energy deposition plots --------------- #  
     # fig, ax, coord, profile = plot_transverse_integrated_depo(

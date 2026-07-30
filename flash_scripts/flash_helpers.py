@@ -7,6 +7,17 @@ import yt
 import glob
 import os
 import re
+from scipy import constants
+
+#--------- Constants ---------- #
+mp = constants.proton_mass # mass of H(kg)
+eps = constants.epsilon_0 # epislon naught SI
+kb = constants.Boltzmann # Boltzmann constant SI
+e = constants.e # charge of electron(Coulomb)
+me = constants.electron_mass # mass electron(kg)
+mp = constants.proton_mass # mass of H(kg)
+pi = constants.pi # pi
+c = constants.c
 
 # ============================================================
 # Helper functions
@@ -481,7 +492,7 @@ def plot_2d_with_lineout(
     cg, dims = get_covering_grid(ds)
     sim_time_ns = get_sim_time_ns(ds)
 
-    arr = get_field_array(cg, ftype, field,)
+    arr = get_field_array(cg, ftype, field,) * kb/e
 
     arr2d = np.asarray(arr[:, :, 0])
 
@@ -687,6 +698,7 @@ def plot_2d_with_lineout(
     ax_line.set_title(line_title)
     ax_line.grid(True,alpha=0.3,)
     ax_line.tick_params(axis="x",labelbottom=False,)
+    ax_line.set_ylim(0,1000)
 
     ax_line.ticklabel_format(axis="y",style="sci",scilimits=(0, 0),)
 
