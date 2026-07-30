@@ -34,9 +34,9 @@ phase_velocity = np.linspace(-7.0e7, 7.0e7, 10000)
 ne_cm3 = 2e19  # cm-3
 ne = ne_cm3 * 1.0e6  # cm^-3 -> m^-3
 
-Te_eV = np.linspace(50, 1000, 100) # eV
-TH_eV = 400.0
-THe_eV = 400.0
+Te_eV = 500.0 # eV
+TH_eV = np.linspace(1,1000,1000)
+THe_eV = TH_eV#400.0
 
 ud_e = 0.0  # 10^6 cm/s
 ud_H = 0.0
@@ -53,14 +53,14 @@ fH = 0.8
 fHe = 1 - fH
 Zbar = ZH * fH + ZHe * fHe
 
-if not np.isclose(fH + fHe, 1.0):
-    raise ValueError("Ion number fractions must sum to one.")
+# if not np.isclose(fH + fHe, 1.0):
+#     raise ValueError("Ion number fractions must sum to one.")
 
 results = []
-for Te in Te_eV:
-    electron = PlasmaSpecies(name = 'electron', Z = -1, m = me, T_eV = Te, n_cm3 = ne_cm3, ud = ud_e*(10**4))
-    hydrogen = PlasmaSpecies(name = 'hydrogen', Z = ZH, m = mp, T_eV = TH_eV, n_cm3 = fH * (ne_cm3 / Zbar), ud = ud_H*(10**4))
-    helium = PlasmaSpecies(name = 'helium', Z = ZHe, m = 4.0 * mp, T_eV = THe_eV, n_cm3 = fHe * (ne_cm3 / Zbar), ud = ud_He*(10**4))
+for Ti in THe_eV:
+    electron = PlasmaSpecies(name = 'electron', Z = -1, m = me, T_eV = Te_eV, n_cm3 = ne_cm3, ud = ud_e*(10**4))
+    hydrogen = PlasmaSpecies(name = 'hydrogen', Z = ZH, m = mp, T_eV = Ti, n_cm3 = fH * (ne_cm3 / Zbar), ud = ud_H*(10**4))
+    helium = PlasmaSpecies(name = 'helium', Z = ZHe, m = 4.0 * mp, T_eV = Ti, n_cm3 = (1-fH) * (ne_cm3 / Zbar), ud = ud_He*(10**4))
     ions  = [hydrogen, helium]
 
     # ============================================================
@@ -78,15 +78,28 @@ spectra = np.array([result["S_total"] for result in results])
 
 ion_mask = np.abs(phase_velocity) <= 1.0e6
 
+from matplotlib.colors import LogNorm
+
 fig, ax = plt.subplots(figsize=(8, 6))
-ax.pcolormesh(phase_velocity[ion_mask]/10**4, Te_eV, spectra[:, ion_mask], shading='auto', cmap='viridis')
-ax.set_xlabel('Phase Velocity (10^6 cm/s)')
-ax.set_ylabel('Electron Temperature (eV)')
+
+pcm = ax.pcolormesh(
+    phase_velocity[ion_mask] / 1e4, THe_eV, spectra[:, ion_mask],
+    shading='auto',
+    cmap='viridis',
+    #norm=LogNorm(vmin=np.max([spectra[:, ion_mask].min(), 1e-10]),  # avoid zero/negative values
+    #vmax=spectra[:, ion_mask].max()
+    #)
+)
+
+ax.set_xlabel('Phase Velocity ($10^6$ cm/s)')
+ax.set_ylabel('THe (eV)')
+
+plt.colorbar(pcm, ax=ax, label='Spectra')
 
 lineout_tool = InteractiveLineout(
     ax=ax,
     x=phase_velocity[ion_mask]/10**4,
-    y=Te_eV,
+    y=THe_eV,
     data=spectra[:, ion_mask],
     width=0.1,
     lineout_label="random function",
