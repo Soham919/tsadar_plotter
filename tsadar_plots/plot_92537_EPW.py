@@ -15,21 +15,21 @@ def plot_92537_EPW(data):
     bv = (r*10**2)/shot_data.loc[92537,"timing"]
     ## Ti, Va, fract plot for all 3 species 
     plt.rcParams.update({
-    #    "font.family": "serif",             # pick font family
-    #    "font.serif": ["Arial"],  # pick specific font
-        "font.size": 17,                     # set size
-        "axes.labelsize": 17,    # font size for axis labels
-        "axes.titlesize": 17,     # font size for titles
-        # Tick direction
-        "xtick.direction": "in",
-        "ytick.direction": "in",
-        # Tick width
-        "xtick.major.width": 0.8,
-        "ytick.major.width": 0.8,
-        # Tick length
-        "xtick.major.size": 3.5,
-        "ytick.major.size": 3.5,
-    })
+            #"font.family": "sans-serif",
+            #"font.sans-serif": ["Arial", "DejaVu Sans"],
+            "font.size": 18,
+            "axes.labelsize": 18,
+            "axes.titlesize": 20,
+            "xtick.labelsize": 18,
+            "ytick.labelsize": 18,
+            "xtick.direction": "in",
+            "ytick.direction": "in",
+            "xtick.major.width": 1.2,
+            "ytick.major.width": 1.2,
+            "xtick.major.size": 5,
+            "ytick.major.size": 5,
+            "axes.linewidth": 1.2,
+        })
 
     # Error parameters
     window = 3  # rolling window
@@ -41,7 +41,8 @@ def plot_92537_EPW(data):
     fig1, ax1  = plt.subplots(figsize=(7.5,5.9))
     c1 = "tab:red"
     c2 = "tab:blue"
-    l1, = ax1.plot(r,Te,color=c1,linewidth=2,linestyle='-',label=r'$T_{e}$')
+    #l1, = ax1.plot(r,Te,color=c1,linewidth=2,linestyle='-',label=r'$T_{e}$')
+    l1 = ax1.scatter(r,Te,color=c1, s=25, zorder=3,label=r'$T_{e}$')
     ax1.fill_between(r,Te-std_Te,Te+std_Te,
                     color='LightCoral',        # fill color
                     alpha=0.2,           # transparency
@@ -66,7 +67,8 @@ def plot_92537_EPW(data):
     #ax1[1,1].legend()
 
     ax2 = ax1.twinx()
-    l2, = ax2.plot(r,ne,color=c2,linewidth=2,linestyle='-',label=r'$n_{e}$')
+    #l2, = ax2.plot(r,ne,color=c2,linewidth=2,linestyle='-',label=r'$n_{e}$')
+    l2 = ax2.scatter(r,ne,color=c2, s=25, zorder=3,label=r'$n_{e}$')
     ax2.fill_between(r,ne-std_ne,ne+std_ne,color='DodgerBlue',        # fill color
                     alpha=0.2,           # transparency
                     edgecolor='RoyalBlue',    # outline color
@@ -82,4 +84,4 @@ def plot_92537_EPW(data):
 
     lines = [l1, l2]
     labels = [line.get_label() for line in lines]
-    ax1.legend(lines, labels, loc='upper right', frameon=False)
+    #ax1.legend(lines, labels, loc='upper right', frameon=False)

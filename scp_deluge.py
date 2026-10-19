@@ -5,15 +5,17 @@ from pathlib import Path
 username = "sban"
 host = "cl7head"
 
-remote_dir = "/home/sban/FLASH4.7.1/SG8_Heaterbeam"  # remote directory containing the files to copy
+#remote_dir = "/g1/hdd/sban/FLASH_runs/3D/MagHeat_test4/output"  # remote directory containing the files to copy
 #remote_dir = "/g1/hdd/sban/FLASH_runs/1D/1mm_spot/1D2Dcompare_Si_3TW"
-file_pattern = "*hdf5_plt_cnt_*"          # examples: "*.h5", "*.png", "*.txt"
+remote_dir = "/home/sban/CH"
+file_pattern = "*"          # examples: "*.h5", "*.png", "*.txt"
 #file_pattern = "*LaserEnergyProfile.dat"        
 # ---- Mac ---- #
-local_dir = "/Users/soham/Documents/Flash/2DCylindrical/Si3N4_cyl_5TW_1300psiGJS"  # local directory to copy files to
+# local_dir = "/Users/soham/Documents/Flash/2DCylindrical/Si3N4_cyl_5TW_1300psiGJS_cfl_0.1"  # local directory to copy files to
 
 # ---- Windows ---- #
-local_dir = Path(r"C:\Simulation_data\FLASH\2D_Cylindrical\Heaters\SG8_Heaterbeam")  # local directory to copy files to
+# local_dir = Path(r"C:\Simulation_data\FLASH\1D_spherical\Sedov_test2")  # local directory to copy files to
+local_dir = Path(r"C:\Simulation_data\PROPACEOS\CH")  # local directory to copy files to
 # -------------------------------
 
 def scp_copy_files(username, host, remote_dir, file_pattern, local_dir):

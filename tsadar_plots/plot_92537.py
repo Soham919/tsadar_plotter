@@ -12,6 +12,7 @@ from TS_aux import shot_data
 def plot_92537(data):
     ### PLOT LEARNED PARAMETERS for H2 AND HE SHOCKS ###
     im1 = data['92537-5']['92537_5_nersc.csv']
+    #im1 = data['92537-3-fwd']['learned_parameters.csv']
     #epw = data['92537']['92537_8_nersc.csv']
 
     # Convert ion fractions to number denisties
@@ -23,20 +24,20 @@ def plot_92537(data):
     bv = (r*10**2)/shot_data.loc[92537,"timing"]
     ## Ti, Va, fract plot for all 3 species 
     plt.rcParams.update({
-    #    "font.family": "serif",             # pick font family
-    #    "font.serif": ["Arial"],  # pick specific font
-        "font.size": 17,                     # set size
-        "axes.labelsize": 17,    # font size for axis labels
-        "axes.titlesize": 17,     # font size for titles
-        # Tick direction
+        #"font.family": "sans-serif",
+        #"font.sans-serif": ["Arial", "DejaVu Sans"],
+        "font.size": 18,
+        "axes.labelsize": 18,
+        "axes.titlesize": 20,
+        "xtick.labelsize": 18,
+        "ytick.labelsize": 18,
         "xtick.direction": "in",
         "ytick.direction": "in",
-        # Tick width
-        "xtick.major.width": 0.8,
-        "ytick.major.width": 0.8,
-        # Tick length
-        "xtick.major.size": 3.5,
-        "ytick.major.size": 3.5,
+        "xtick.major.width": 1.2,
+        "ytick.major.width": 1.2,
+        "xtick.major.size": 5,
+        "ytick.major.size": 5,
+        "axes.linewidth": 1.2,
     })
 
     fig1, ax1  = plt.subplots(2,2,figsize=(16,13))
@@ -63,8 +64,8 @@ def plot_92537(data):
     std_v2_1 = im1["Va_ion-2"].rolling(window=window).std()
     #std_v3_1 = im1["Va_ion-3"].rolling(window=window).std()
 
-
-    ax1[1,0].plot(r, f1_1,color='orangered',linewidth=2, linestyle='-', label='H')
+    ax1[1,0].scatter(r, f1_1, color='orangered', s=25, label='H', zorder=3)
+    #ax1[1,0].plot(r, f1_1,color='orangered',linewidth=2, linestyle='-', label='H')
     ax1[1,0].fill_between(r,f1_1-std_f1_1,f1_1+std_f1_1,
                 color='coral',        # fill color
                 alpha=0.2,           # transparency
@@ -73,7 +74,8 @@ def plot_92537(data):
                 linestyle='-',      # outline style (optional)
     )
     #ax1[0].plot(r, lp["fract_ion-2"],color='mediumblue',linewidth=2, linestyle='-', label='Cold H')
-    ax1[1,0].plot(r, f2_1,color='MediumSeaGreen',linewidth=2, linestyle='-', label='He')
+    #ax1[1,0].plot(r, f2_1,color='MediumSeaGreen',linewidth=2, linestyle='-', label='He')
+    ax1[1,0].scatter(r, f2_1, color='MediumSeaGreen', s=25, label='He', zorder=3)
     ax1[1,0].fill_between(r,f2_1-std_f2_1,f2_1+std_f2_1,
                 color='MediumAquamarine',        # fill color
                 alpha=0.2,           # transparency
@@ -90,7 +92,8 @@ def plot_92537(data):
     ax1[1,0].grid(True)
     ax1[1,0].legend()
 
-    ax1[0,1].plot(r, t1_1,color='orangered',linewidth=2,linestyle='-',label='H')
+    #ax1[0,1].plot(r, t1_1,color='orangered',linewidth=2,linestyle='-',label='H')
+    ax1[0,1].scatter(r, t1_1, color='orangered', s=25, label='H', zorder=3)
     ax1[0,1].fill_between(r,t1_1-std_t1_1,t1_1+std_t1_1,
                 color='coral',        # fill color
                 alpha=0.2,           # transparency
@@ -99,7 +102,8 @@ def plot_92537(data):
                 linestyle='-',      # outline style (optional)
     )
     #ax1[1].plot(r, lp["Ti_ion-2"],color='mediumblue',linewidth=2,linestyle='-')
-    ax1[0,1].plot(r, t2_1,color='MediumSeaGreen',linewidth=2,linestyle='-',label='He')
+    #ax1[0,1].plot(r, t2_1,color='MediumSeaGreen',linewidth=2,linestyle='-',label='He')
+    ax1[0,1].scatter(r, t2_1, color='MediumSeaGreen', s=25, label='He', zorder=3)
     ax1[0,1].fill_between(r,t2_1-std_t2_1,t2_1+std_t2_1,
                 color='MediumAquamarine',        # fill color
                 alpha=0.2,           # transparency
@@ -116,7 +120,8 @@ def plot_92537(data):
     ax1[0,1].grid(True)
     ax1[0,1].legend()
 
-    ax1[1,1].plot(r, v1_1,color='orangered',linewidth=2,linestyle='-',label='H')
+    #ax1[1,1].plot(r, v1_1,color='orangered',linewidth=2,linestyle='-',label='H')
+    ax1[1,1].scatter(r, v1_1, color='orangered', s=25, label='H', zorder=3)
     ax1[1,1].fill_between(r,v1_1-std_v1_1,v1_1+std_v1_1,
                 color='coral',        # fill color
                 alpha=0.2,           # transparency
@@ -125,7 +130,8 @@ def plot_92537(data):
                 linestyle='-',      # outline style (optional)
     )
     #ax1[2].plot(r, lp["Va_ion-2"],color='mediumblue',linewidth=2,linestyle='-')
-    ax1[1,1].plot(r, v2_1,color='MediumSeaGreen',linewidth=2,linestyle='-',label='He')
+    #ax1[1,1].plot(r, v2_1,color='MediumSeaGreen',linewidth=2,linestyle='-',label='He')
+    ax1[1,1].scatter(r, v2_1, color='MediumSeaGreen', s=25, label='He', zorder=3)
     ax1[1,1].fill_between(r,v2_1-std_v2_1,v2_1+std_v2_1,
                 color='MediumAquamarine',        # fill color
                 alpha=0.2,           # transparency

@@ -15,8 +15,8 @@ mp = constants.proton_mass # mass of H(kg)
 pi = constants.pi # pi
 c = constants.c
 h = constants.h
-A1 = 1 # H Gas
-A2 = 28 # Si Targ
+A1 = 1.6 # H + He Gas
+A2 = 20.2 # Si Targ
 A3 = 4 # He cham
 
 def plotFLASH1d_profiles(ds, field, fp, xlims=None, useMicrons=True, savePlots=False, saveDir=None, ray_data=None):
@@ -56,7 +56,6 @@ def plotFLASH1d_profiles(ds, field, fp, xlims=None, useMicrons=True, savePlots=F
     # ---- quick check: is laser deposition nonzero near chosen x? ---- #
     check_x_um = 3600.0   # choose x location in microns
     tol = 1e-30          # tolerance for "nonzero"
-
     RED = "\033[91m"
     RESET = "\033[0m"
 
@@ -67,18 +66,32 @@ def plotFLASH1d_profiles(ds, field, fp, xlims=None, useMicrons=True, savePlots=F
 
     ix_check = np.argmin(np.abs(x_for_check - check_x_um))
     val_check = las_depo[ix_check]
+    burnthrough_result = {"detected": False, "time_ns": None, "requested_coord_um": check_x_um, "actual_coord": x_for_check[ix_check], "deposition": val_check}
 
     if abs(val_check) > tol:
         print(RED +
             f"Laser deposition is NONZERO near x = {check_x_um:.3g} um "
             f"(nearest x = {x_for_check[ix_check]:.3g} um, value = {val_check:.3e} J/cm^3)"
             + RESET)
+
+        burnthrough_result = {
+        "detected": True,
+        "time_ns": sim_time_ns,
+        "requested_coord_um": check_x_um,
+        "actual_coord": x_for_check[ix_check],
+        "deposition": val_check,
+        }
     else:
         print(RED +
             f"Laser deposition is zero near x = {check_x_um:.3g} um "
             f"(nearest x = {x_for_check[ix_check]:.3g} um, value = {val_check:.3e} J/cm^3)"
             + RESET)
+
+
+    
     #------------------------------------------------------------------ #
+
+
 
     # Decide plot x-limits once, using hydro x-axis if xlims is not passed
     if xlims is None:
@@ -200,6 +213,6 @@ def plotFLASH1d_profiles(ds, field, fp, xlims=None, useMicrons=True, savePlots=F
         plt.savefig(out, bbox_inches="tight")
         print(f"Saved {out}")
 
-    plt.show()
+    #plt.show()
 
-    return fig, (ax, ax2, ax_ray)
+    return fig, (ax, ax2, ax_ray), burnthrough_result

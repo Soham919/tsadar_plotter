@@ -4,9 +4,9 @@ from pathlib import Path
 # -------- user settings --------
 username = "sban"
 host = "cl4head"
-remote_dir = "/home/sban/Scalings/target_thickness_vary"
-file_pattern = "*"
-local_dir = r"C:\Simulation_data\LILAC_simulations\target_thickness_vary"
+remote_dir = "/home/sban/1D_planar/Scalings/Si_thickness_and_pulse_duration"
+file_pattern = "I*"
+local_dir = r"C:\Simulation_data\LILAC_simulations\Scaling\burnthrough"  # local directory to copy files to
 # -------------------------------
 
 def scp_copy_files(username, host, remote_dir, file_pattern, local_dir):

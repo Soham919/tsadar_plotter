@@ -18,11 +18,12 @@ from h5_helpers.h5_helper import h5_to_dict
 baseDir = Path(r"\\profiles\Users$\sban\Documents\Kinshock")
 
 fp = baseDir/"Kinshock-26A"/"GasJet"
+# file = "D_GJ_C_232_M5_10mm_H2_p8_He_p2_700psi.h5"  # file you want to import
 file = "D-GJ-C-232_H2He_1500psi.h5"  # file you want to import
 fp = fp/file
 
 r, z, q = GJS_analyze(fp, "density") 
-q = q*(1300/1500)  # scale to whatever psi
+#q = q*(700/1500)  # scale to whatever psi
 P_rz, P_xyz = interp_Prz(q, r, z)
 print("r range:", r.min(), r.max())
 print("z range:", z.min(), z.max())
@@ -39,10 +40,10 @@ rho_interp = P_xyz(X, Y, Z)
 outDir = baseDir/"Kinshock-26A"/"GasJet"/"FLASH_tables"
 outDir.mkdir(parents=True, exist_ok=True)
 
-outFile = outDir/"M510mm_1300psi_10mmFoilOffset_GJS_densH2He_xy.txt"
+outFile = outDir/"M510mm_1500psi_8.5mmFoilOffset_GJS_densH2He_xy.txt"
 
 X_cm = X / 10.0  # convert mm to cm
-Y_cm = (Y+10) / 10.0  # convert mm to cm
+Y_cm = (Y+8.5) / 10.0  # convert mm to cm
 
 with open(outFile, "w") as f:
     f.write("# Gas jet interpolated density table\n")
@@ -61,8 +62,8 @@ print(f"Wrote table to: {outFile}")
 
 fig, ax = plt.subplots(1, 2, figsize=(10, 4))
 
-im = ax[0].pcolormesh(X, Y+10, rho_interp, cmap="viridis", shading="auto")
-ax[0].axhline(0, color="white", linestyle="--")
+im = ax[0].pcolormesh(X, Y+8.5, rho_interp, cmap="viridis", shading="auto")
+ax[0].axhline(8.5, color="white", linestyle="--")
 ax[0].set_xlabel("x (mm)")
 ax[0].set_ylabel("y (mm)")
 ax[0].set_title("Interpolated density at z = 5 mm")

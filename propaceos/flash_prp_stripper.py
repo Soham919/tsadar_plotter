@@ -41,6 +41,6 @@ def strip_propaceos_ion_fractions(infile, outfile=None):
 
 
 # Example
-fp = Path(r"C:\Simulation_data\PROPACEOS\Si3N4_2\Si3N4_2.prp")
-op = Path(r"C:\Simulation_data\PROPACEOS\Si3N4_2\Si3N4_2_stripped.prp")
-strip_propaceos_ion_fractions(fp)
+fp = Path(r"C:\Simulation_data\PROPACEOS\CH\CH.prp")
+op = Path(r"C:\Simulation_data\PROPACEOS\CH_stripped.prp")
+strip_propaceos_ion_fractions(fp, op)

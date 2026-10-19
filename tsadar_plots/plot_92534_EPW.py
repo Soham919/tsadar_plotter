@@ -10,76 +10,168 @@ from TS_aux import load_file
 from TS_aux import shot_data
 
 def plot_92534_EPW(data):
-    lp = data['learned_parameters.csv']
-    r = shot_data.loc[92534,"pointing"] - lp["Radius (\\mum)"]/10**3
-    bv = (r*10**2)/shot_data.loc[92534,"timing"]
-    ## Ti, Va, fract plot for all 3 species 
+
+    # ============================================================
+    # FIGURE SETTINGS
+    # ============================================================
+
+    FIGSIZE = (5, 5)
+
+    FONT_SIZE = 16
+    LABEL_SIZE = 18
+    TICK_SIZE = 16
+
+    AXIS_WIDTH = 1.2
+    TICK_WIDTH = 1.2
+    TICK_LENGTH = 5
+    MARKER_SIZE = 22
+
+    TE_COLOR = "tab:red"
+    NE_COLOR = "tab:blue"
+
     plt.rcParams.update({
-    #    "font.family": "serif",             # pick font family
-    #    "font.serif": ["Arial"],  # pick specific font
-        "font.size": 17,                     # set size
-        "axes.labelsize": 17,    # font size for axis labels
-        "axes.titlesize": 17,     # font size for titles
-        # Tick direction
+        "font.family": "serif",
+        "font.size": FONT_SIZE,
+        "mathtext.fontset": "cm",
+
+        "axes.labelsize": LABEL_SIZE,
+        "axes.linewidth": AXIS_WIDTH,
+
+        "xtick.labelsize": TICK_SIZE,
+        "ytick.labelsize": TICK_SIZE,
         "xtick.direction": "in",
         "ytick.direction": "in",
-        # Tick width
-        "xtick.major.width": 0.8,
-        "ytick.major.width": 0.8,
-        # Tick length
-        "xtick.major.size": 3.5,
-        "ytick.major.size": 3.5,
+        "xtick.major.width": TICK_WIDTH,
+        "ytick.major.width": TICK_WIDTH,
+        "xtick.major.size": TICK_LENGTH,
+        "ytick.major.size": TICK_LENGTH,
     })
 
-    # Error parameters
-    window = 3  # rolling window
-    Te = lp["Te_electron"].rolling(window=window).mean()
-    ne = lp["ne_electron"].rolling(window=window).mean()
-    std_Te = lp["Te_electron"].rolling(window=window).std()
-    std_ne = lp["ne_electron"].rolling(window=window).std()
+    # ============================================================
+    # Data
+    # ============================================================
 
-    fig1, ax1  = plt.subplots(figsize=(7.5,5.9))
-    c1 = "tab:red"
-    c2 = "tab:blue"
-    l1, = ax1.plot(r,Te,color=c1,linewidth=2,linestyle='-',label=r'$T_{e}$')
-    ax1.fill_between(r,Te-std_Te,Te+std_Te,
-                    color='LightCoral',        # fill color
-                    alpha=0.2,           # transparency
-                    edgecolor='IndianRed',    # outline color
-                    linewidth=1.5,       # outline width
-                    linestyle='-',      # outline style (optional)
-                    label='±1σ band')
+    lp = data["learned_parameters.csv"]
 
-    #ax1[2].plot(r, lp["Va_ion-2"],color='mediumblue',linewidth=2,linestyle='-')
-    #ax1[2].plot(r, bv,color='k',linewidth=2,linestyle='--')
-    ax1.set_title(r'Electron density and temperature', pad=15)
-    ax1.set_xlabel(r"$x (mm)$")
-    #ax1.set_xlim([2.4, 3.65])
-    #ax1[1,1].set_ylim([0.22, 0.4])
-    ax1.invert_xaxis()
-    ax1.set_ylabel(r"$T_{e} (keV)$", color = c1)
-    ax1.tick_params(axis='y', colors=c1)
-    ax1.spines['left'].set_color(c1)
-    ax1.spines['left'].set_linewidth(1.5)
-    ax1.spines['right'].set_visible(False)
-    ax1.grid(True)
-    #ax1[1,1].legend()
+    r = shot_data.loc[92534, "pointing"] - lp["Radius (\\mum)"] / 1e3
+
+    # Rolling mean / standard deviation
+    window = 5
+
+    Te = lp["Te_electron"].rolling(window=window, center=True).mean()
+    ne = lp["ne_electron"].rolling(window=window, center=True).mean()
+
+    std_Te = lp["Te_electron"].rolling(window=window, center=True).std()
+    std_ne = lp["ne_electron"].rolling(window=window, center=True).std()
+
+    # ============================================================
+    # Figure
+    # ============================================================
+
+    fig, ax1 = plt.subplots(figsize=FIGSIZE)
+
+    # ------------------------------------------------------------
+    # Electron temperature
+    # ------------------------------------------------------------
+
+    ax1.scatter(
+        r, Te,
+        color=TE_COLOR,
+        s=MARKER_SIZE,
+        label=r"$T_e$",
+        zorder=3
+    )
+
+    ax1.fill_between(
+        r,
+        Te - std_Te,
+        Te + std_Te,
+        color=TE_COLOR,
+        alpha=0.15,
+        linewidth=0
+    )
+
+    ax1.set_xlabel(r"$x$ (mm)")
+    ax1.set_ylabel(r"$T_e$ (keV)", color=TE_COLOR)
+
+    ax1.tick_params(axis="y", colors=TE_COLOR)
+    ax1.spines["left"].set_color(TE_COLOR)
+
+    # ------------------------------------------------------------
+    # Electron density
+    # ------------------------------------------------------------
 
     ax2 = ax1.twinx()
-    l2, = ax2.plot(r,ne,color=c2,linewidth=2,linestyle='-',label=r'$n_{e}$')
-    ax2.fill_between(r,ne-std_ne,ne+std_ne,color='DodgerBlue',        # fill color
-                    alpha=0.2,           # transparency
-                    edgecolor='RoyalBlue',    # outline color
-                    linewidth=1.5,       # outline width
-                    linestyle='-',      # outline style (optional)
-                    label='±1σ band')
-    ax2.set_ylabel(r"$n_{e} (\times 10^{20} cm^{-3})$", color = c2)
-    ax2.tick_params(axis='y', colors=c2)
-    ax2.spines['right'].set_color(c2)
-    ax2.spines['right'].set_linewidth(1.5)
-    ax2.spines['left'].set_visible(False)
-    #ax2.legend()
 
-    lines = [l1, l2]
-    labels = [line.get_label() for line in lines]
-    ax1.legend(lines, labels, loc='upper right', frameon=False)
+    ax2.spines["left"].set_visible(False)
+    ax1.spines["right"].set_visible(False)
+
+    ax1.spines["left"].set_color(TE_COLOR)
+    ax1.spines["left"].set_linewidth(AXIS_WIDTH)
+
+    ax2.spines["right"].set_color(NE_COLOR)
+    ax2.spines["right"].set_linewidth(AXIS_WIDTH)
+    ax2.scatter(
+        r, ne,
+        color=NE_COLOR,
+        s=MARKER_SIZE,
+        label=r"$n_e$",
+        zorder=3
+    )
+
+    ax2.fill_between(
+        r,
+        ne - std_ne,
+        ne + std_ne,
+        color=NE_COLOR,
+        alpha=0.15,
+        linewidth=0
+    )
+
+    ax2.set_ylabel(
+        r"$n_e$ ($10^{20}$ cm$^{-3}$)",
+        color=NE_COLOR
+    )
+
+    ax2.tick_params(axis="y", colors=NE_COLOR)
+    ax2.spines["right"].set_color(NE_COLOR)
+
+    # ============================================================
+    # Formatting
+    # ============================================================
+
+    # Match EPW spatial range
+    ax1.set_xlim(2.25, 4.0)
+
+    ax1.set_xticks([2.50, 3.00, 3.50, 4.00])
+
+    # Light grid behind data
+    ax1.grid(True, alpha=0.20, linewidth=0.8)
+    ax1.set_axisbelow(True)
+
+    # Keep both vertical spines visible and colored
+    ax1.spines["left"].set_linewidth(AXIS_WIDTH)
+    ax2.spines["right"].set_linewidth(AXIS_WIDTH)
+
+    # No title -- use LaTeX caption
+
+    # ============================================================
+    # Margins
+    # ============================================================
+
+    # Slightly more right margin than EPW because of second y-axis
+    fig.subplots_adjust(
+    left=0.18,
+    right=0.90,
+    bottom=0.16,
+    top=0.97
+    )
+    # ============================================================
+    # Save
+    # ============================================================
+
+    fig.savefig("electron_fit.pdf")
+
+    plt.show()
+
+    return fig, (ax1, ax2)

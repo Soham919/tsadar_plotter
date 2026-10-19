@@ -47,21 +47,44 @@ def plot_stitch_32_33_34_EPW(data):
     fig1, ax1  = plt.subplots(figsize=(16,13))
     # Error parameters
 
-    window = 2  # rolling window
-    f1_1 = im1["Te_electron"].rolling(window=window).mean()
-    f2_1 = im1["ne_electron"].rolling(window=window).mean()
-    f1_2 = im2["Te_electron"].rolling(window=window).mean()
-    f2_2 = im2["ne_electron"].rolling(window=window).mean()
-    f1_3 = im3["Te_electron"].rolling(window=window).mean()
-    f2_3 = im3["ne_electron"].rolling(window=window).mean()
+    window = 5  # rolling window
+    f1_1 = im1["Te_electron"].rolling(window=window,center=True).mean()
+    f2_1 = im1["ne_electron"].rolling(window=window,center=True).mean()
+    f1_2 = im2["Te_electron"].rolling(window=window,center=True).mean()
+    f2_2 = im2["ne_electron"].rolling(window=window,center=True).mean()
+    f1_3 = im3["Te_electron"].rolling(window=window,center=True).mean()
+    f2_3 = im3["ne_electron"].rolling(window=window,center=True).mean()
 
-    std_f1_1 = im1["Te_electron"].rolling(window=window).std()
-    std_f2_1 = im1["ne_electron"].rolling(window=window).std()
-    std_f1_2 = im2["Te_electron"].rolling(window=window).std()
-    std_f2_2 = im2["ne_electron"].rolling(window=window).std()
-    std_f1_3 = im3["Te_electron"].rolling(window=window).std()
-    std_f2_3 = im3["ne_electron"].rolling(window=window).std()
+    std_f1_1 = im1["Te_electron"].rolling(window=window,center=True).std()
+    std_f2_1 = im1["ne_electron"].rolling(window=window,center=True).std()
+    std_f1_2 = im2["Te_electron"].rolling(window=window,center=True).std()
+    std_f2_2 = im2["ne_electron"].rolling(window=window,center=True).std()
+    std_f1_3 = im3["Te_electron"].rolling(window=window,center=True).std()
+    std_f2_3 = im3["ne_electron"].rolling(window=window,center=True).std()
 
+    # ============================================================
+    # SAVE FIT VALUES AND ROLLING STANDARD DEVIATIONS
+    # ============================================================
+
+    output_dir = Path("EPW_errors")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    for shot, radius, im in [
+        ("92532-31", r1, im1),
+        ("92533-37", r2, im2),
+        ("92534-10", r3, im3),
+    ]:
+        results = pd.DataFrame({
+            "x_mm": radius,
+            "Te_fit": im["Te_electron"],
+            f"Te_mean_w{window}": im["Te_electron"].rolling(window).mean(),
+            f"Te_std_w{window}": im["Te_electron"].rolling(window).std(),
+            "ne_fit": im["ne_electron"],
+            f"ne_mean_w{window}": im["ne_electron"].rolling(window).mean(),
+            f"ne_std_w{window}": im["ne_electron"].rolling(window).std(),
+        })
+
+        results.to_csv(output_dir / f"EPW_{shot}_window{window}.csv", index=False)
 
     fig1, ax1  = plt.subplots(figsize=(7.5,5.9))
     c1 = "tab:red"

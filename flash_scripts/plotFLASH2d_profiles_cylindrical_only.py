@@ -432,7 +432,7 @@ def plotFLASH2d_profiles_cylindrical(
     if rays and ray_data is not None:
         # Assumes ray data are stored as x/y-like coordinates corresponding to r/z.
         # If they look swapped, swap xscale/yscale handling inside plot_rays.
-        plot_rays(ax2d, ray_data, xscale=ray_scale, yscale=ray_scale, color="w", lw=0.8)
+        plot_rays(ax2d, ray_data, xscale=ray_scale, yscale=ray_scale, color="w", lw=0.8, cylindrical=True)
 
     # Draw selected lineout location on 2D r-z image.
     if laxis == "z":

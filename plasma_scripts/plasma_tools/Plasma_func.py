@@ -14,25 +14,23 @@ h = constants.h
 
 
 
-def v_th(T,m):
+def v_th(T=1.0, m=me):
     """
-    Calculates the thermal velocity of particle species
+    Calculate the 1D thermal speed of a Maxwellian species.
 
     Parameters
     ----------
     T : float
-        Temprature of the species in eV
+        Species temperature in eV.
     m : float
-        mass of the species in kg
-    
+        Particle mass in kg.
+
     Returns
     -------
-    v_th : float
-        thermal velocity of the particle species in m/s
+    float
+        Thermal speed sqrt(k_B*T/m) in m/s.
     """
-    T = T*e
-    vt = (T/m)**(0.5)
-    return vt
+    return np.sqrt(T * e / m)
 
 def lam_db(Te, ne):
     """
@@ -85,10 +83,34 @@ def omg_p(ne):
     omg = ((ne*(e**2))/(me*eps))**(0.5)
     return omg
 
-def cs(m, Z, Te):
+def cs(m, Z, Te, Ti):
+    """
+        Calculates the ion sound speed in a plasma assuming Te > Ti and no correction from debye length
+    
+        Parameters
+        ----------
+        m : float
+            Mass number of the ion species
+        
+        Z : float
+            Ionization state of the ion species
+
+        Te : float
+            Electron temperature in eV
+              
+        Ti : float
+            Ion temperature in eV
+            
+        Returns
+        -------
+        speed : float
+            ion sound speed in m/s
+    """
+
     m = m*mp
     Te = e*Te
-    speed = ((5/3)*Z*Te/m)**(0.5)
+    Ti = e*Ti
+    speed = (((5/3)*Z*Te + (5/3)*Ti)/m)**(0.5)
     return speed
 
 def col_t_ii(mi, mj, Ti, nj, Zi, Zj):
@@ -258,9 +280,9 @@ def blast_wave_r_v(E,rho1,t):
     v_t = (2/5)*eps*(E/(rho1*(t**3)))**(1/5)
     return [r_t,v_t]
 
-def power_calc(n,E,t,A):
+def power_calc(n,E,t,R):
     """
-    Calculates the total power from laser beams on a certain surface area
+    Calculates the total intensity from laser beams on a certain surface area
     Parameters
     ----------
     n : float
@@ -269,19 +291,44 @@ def power_calc(n,E,t,A):
         Energy in each beam (J)
     t : float
         Pulse duration (ps)
-    A : float
-        Area over which the beams are focused (cm^2)
+    R : float
+        Radius of the spot size where beams are focused (cm)
     Returns
     -------
     P : float
-        The power in TW/cm2
+        The intensity in TW/cm2
     """
     t = t*1e-12 # ps to s
-    A = A*1e-4 # cm2 to m2
+    R = R*1e-2 # cm to m
+    A = pi * R**2  # cm2 to m2
     P = (n*E)/ (t*A) # W/m2
     P = P*1e-16 # TW/cm2
     return P
 
+def Spitzer_viscosity(Ti, Z, A, n_i):
+    """
+    Calculates the Spitzer viscosity for a plasma
+    Parameters
+    ----------
+    Ti : float
+        Ion temperature in eV
+    Z : float
+        Charge state of the ions
+    A : float
+        Atomic mass of the ions
+    n_i : float
+        Ion density in cm^-3
+    Returns
+    -------
+    eta : float
+        The Spitzer viscosity in Pa.s (cm^2/s)
+    """
+    rho_i = n_i*A*mp*(1e3) # gm/cm3 
+    lnA = 10  # Coulomb Logarithm
+    c = 2.21*10**(-15)
+    Ti = Ti*e/kb # eV to K
+    eta = c*((A**(1/2))*Ti**(5/2))/(Z**4*rho_i*lnA)
+    return eta
 
 def disp_EPW(ne, Te, k):
     """
@@ -310,7 +357,7 @@ def disp_EPW(ne, Te, k):
 
 def n_photon(lam,E):
     """
-    Calculates the total power from laser beams on a certain surface area
+    Calculates the total number of photons from laser beams on a certain surface area
     Parameters
     ----------
     w : float
@@ -352,11 +399,14 @@ def super_gaussian(x, A, x0, w, m):
 
 if __name__ == "__main__":
 
-    print(power_calc(13,189,500,pi*(714e-4)**2))
+    print(power_calc(13, 500, 1000, pi*(0.05**2)))
     #print(nc(351))
-    #plt.plot(x,RH_T(x))
-    #plt.show()
 
+    # spitzer = Spitzer_viscosity(2000,10,20.2,2e21) 
+    # print("Spitzer viscosity = ",spitzer," cm^2/s")
+    # u = 1e6
+    # L = 100.0e-4
+    # print("Reynolds number = ",(u*L)/spitzer)
     #print("Speed of sound in H+/He2+ plasma = ",cs_ij(0.067,0.033,1,4,1,2,50))
     #print("Speed of sound in H+ plasma = ",cs(1,1,50))
 

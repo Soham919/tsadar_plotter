@@ -10,7 +10,7 @@ baseDir = Path().parent.resolve()  # get the parent directory of the current fil
 
 #shot = "117827"  # change this for the shot you want to plot
 ts_type = "imaging" # change this for the type of TS data you want to plot (imaging or time resolved)
-shots = ["92537"]  # change this for the shots you want to plot
+shots = ["92534"]  # change this for the shots you want to plot
 epw = np.zeros((len(shots), 1024, 1024))
 iaw = np.zeros((len(shots), 1024, 1024))
 
@@ -23,13 +23,15 @@ y_iaw = np.zeros((len(shots), 1024))
 i = 0
 for shot in shots:
     # --------- Windows ------------ #
-    fp = baseDir/".."/"Kinshock"/"Kinshock-19A"/"Data"/shot
+    #fp = baseDir/".."/"Kinshock"/"Kinshock-19A"/"Data"/shot
+    fp = Path("//profiles/Users$/sban/Documents/Kinshock/Kinshock-19A/Data")
+    fp = fp/shot
     # --------- Mac ------------
     # fp = baseDir/"Kinshock-19A"/"data"/"117828"
 
-    saveDir = baseDir/"Kinshock"/"Kinshock-26A"/"Data"/shot/"plots"
-    if not saveDir.exists():
-        saveDir.mkdir(parents = True, exist_ok = True)
+    # saveDir = baseDir/"Kinshock"/"Kinshock-26A"/"Data"/shot/"plots"
+    # if not saveDir.exists():
+    #     saveDir.mkdir(parents = True, exist_ok = True)
 
 
     f_iaw = f"IAW_CCD-s{shot}.h5"  # switch names for ROSS and CCD since they are named differently
@@ -66,56 +68,99 @@ for shot in shots:
 
     i = i + 1
 
-fig, ax = plt.subplots(1,len(shots),figsize=(1.1*5*len(shots),5), constrained_layout=True)
+# ============================================================
+# FIGURE SETTINGS
+# ============================================================
+
+FIGSIZE = (5, 5)
+
+FONT_SIZE = 16
+LABEL_SIZE = 18
+TICK_SIZE = 16
+
+AXIS_WIDTH = 1.2
+TICK_WIDTH = 1.2
+TICK_LENGTH = 5
+
+PROBE_COLOR = "white"
+PROBE_LINEWIDTH = 2.0
 
 plt.rcParams.update({
-    #    "font.family": "serif",             # pick font family
-    #    "font.serif": ["Arial"],  # pick specific font
-        "font.size": 60,                     # set size
-        "axes.labelsize": 60,    # font size for axis labels
-        "axes.titlesize": 60,     # font size for titles
-        # Tick direction
-        "xtick.direction": "in",
-        "ytick.direction": "in",
-        # Tick width
-        "xtick.major.width": 0.8,
-        "ytick.major.width": 0.8,
-        # Tick length
-        "xtick.major.size": 3.5,
-        "ytick.major.size": 3.5,
-    })
+    "font.family": "serif",
+    "font.size": FONT_SIZE,
+    "mathtext.fontset": "cm",
 
-for i in range(len(shots)):
-    x_iaw[i,:] = shot_data.loc[int(shots[i]),"pointing"] - x_iaw[i,:]/10**3
+    "axes.labelsize": LABEL_SIZE,
+    "axes.linewidth": AXIS_WIDTH,
 
-    if len(shots) == 1:
-        ax = [ax]  # make ax a list if there's only one subplot
-    ax[i].pcolormesh(x_iaw[i,:], y_iaw[i,:], iaw[i,:,:], cmap='turbo', shading='auto')   # change to iaw/epw if you want to plot the epws
-    ax[i].hlines(
+    "xtick.labelsize": TICK_SIZE,
+    "ytick.labelsize": TICK_SIZE,
+    "xtick.direction": "in",
+    "ytick.direction": "in",
+    "xtick.major.width": TICK_WIDTH,
+    "ytick.major.width": TICK_WIDTH,
+    "xtick.major.size": TICK_LENGTH,
+    "ytick.major.size": TICK_LENGTH,
+})
+
+# ============================================================
+# Plot
+# ============================================================
+
+fig, ax = plt.subplots(figsize=FIGSIZE)
+
+# Convert spatial calibration to mm
+x_plot = shot_data.loc[int(shots[0]), "pointing"] - x_epw[0, :] / 1e3
+
+pcm = ax.pcolormesh(
+    x_plot,
+    y_epw[0, :],
+    epw[0, :, :],
+    cmap="turbo",
+    shading="auto",
+    rasterized=True
+)
+
+# Probe wavelength
+ax.axhline(
     526.5,
-    xmin=x_iaw[i,:].min(),
-    xmax=x_iaw[i,:].max(),
-    color='white',
-    linestyle='--',
-    linewidth=2
-    )
-    ax[i].set_xlim([3.55, 4.75])
-    ax[i].set_xlabel("x (mm)")
-    ax[i].set_ylabel(r"$\lambda (nm)$")
+    color=PROBE_COLOR,
+    linestyle="--",
+    linewidth=PROBE_LINEWIDTH
+)
 
-    #ax[i].set_title(f"Shot {shots[i]}")
+# ============================================================
+# Axes
+# ============================================================
 
-#Remove some tics for a stitched picture, not needed if plotting just one shot
+ax.set_xlim(2.25, 4.0)
 
-ax[0].set_xticks([3.6, 3.8, 4.0, 4.2, 4.4, 4.6])
+# ax.set_xticks([
+#     2.25, 2.50, 2.75, 3.00,
+#     3.25, 3.50, 3.75, 4.00
+# ])
 
-# ax[1].set_yticks([])      # removes tick marks
-# ax[1].set_ylabel("")      # removes label
-# ax[1].set_xticks([2, 3, 4, 5, 6])
+ax.set_xlabel(r"$x$ (mm)")
+ax.set_xticks([2.50, 3.00, 3.50, 4.00])   
+ax.set_ylabel(r"$\lambda$ (nm)")
 
-# ax[2].set_yticks([])      # removes tick marks
-# ax[2].set_ylabel("")      # removes label
-# ax[2].set_xticks([3, 4, 5, 6, 7])
+# No title -- use the LaTeX caption instead
 
-#plt.tight_layout()
+# ============================================================
+# Margins
+# ============================================================
+
+fig.subplots_adjust(
+    left=0.18,
+    right=0.96,
+    bottom=0.16,
+    top=0.97
+)
+
+# ============================================================
+# Save
+# ============================================================
+
+fig.savefig("EPW_spectrum.pdf")
+
 plt.show()

@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import constants
 from scipy.special import wofz
-from Plasma_func import v_th, lam_db
 
 eps = constants.epsilon_0 # epislon naught SI
 kb = constants.Boltzmann # Boltzmann constant SI
@@ -346,15 +345,15 @@ if __name__ == "__main__":
     ne = ne_cm3 * 1.0e6  # cm^-3 -> m^-3
 
     Te_eV = 500.0  # eV
-    TH_eV = 400.0
-    THe_eV = 400.0
+    TH_eV = 300.0
+    THe_eV = 300.0
 
     ud_e = 0.0  # 10^6 cm/s
     ud_H = 0
     ud_He = 0
     # Ion charge states
     ZH = 1.0    
-    ZHe = 2.0
+    ZHe = 4.0
 
     # Ion number fractions:
     #
@@ -369,7 +368,7 @@ if __name__ == "__main__":
 
     electron = PlasmaSpecies(name = 'electron', Z = -1, m = me, T_eV = Te_eV, n_cm3 = ne_cm3, ud = ud_e*(10**4))
     hydrogen = PlasmaSpecies(name = 'hydrogen', Z = ZH, m = mp, T_eV = TH_eV, n_cm3 = fH * (ne_cm3 / Zbar), ud = ud_H*(10**4))
-    helium = PlasmaSpecies(name = 'helium', Z = ZHe, m = 4.0 * mp, T_eV = THe_eV, n_cm3 = fHe * (ne_cm3 / Zbar), ud = ud_He*(10**4))
+    helium = PlasmaSpecies(name = 'helium', Z = ZHe, m = 14.0 * mp, T_eV = THe_eV, n_cm3 = fHe * (ne_cm3 / Zbar), ud = ud_He*(10**4))
     ions  = [hydrogen, helium]
 
     # ============================================================
@@ -692,7 +691,7 @@ if __name__ == "__main__":
         linestyle="-.",
         color = "blue",
         linewidth=1.8,
-        label=r"$S_{\mathrm{He}}$ contribution",
+        label=r"$S_{\mathrm{N}}$ contribution",
     )
 
     # Only show zero crossings inside the ion window
@@ -723,5 +722,5 @@ if __name__ == "__main__":
     plt.show()
 
     fig2, ax2 = plt.subplots(figsize=(9, 5))
-    ax2.plot(v_kms, 1/((epsilon.real)**2 + (epsilon.imag)**2) , linewidth=2, label=r"$\mathrm{Re}(\epsilon)$")
+    ax2.plot(v_kms[ion_mask], 1/((epsilon[ion_mask].real)**2 + (epsilon[ion_mask].imag)**2) , linewidth=2, label=r"$\mathrm{Re}(\epsilon)$")
     plt.show()

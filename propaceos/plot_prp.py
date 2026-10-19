@@ -131,8 +131,6 @@ class PropaceosTables:
 
         plt.tight_layout()
         return fig, ax
-    
-    from pathlib import Path
 
     def strip_for_flash(self, outpath):
         """
@@ -214,27 +212,29 @@ class PropaceosTables:
         return self.lines
     
 
+if __name__ == "__main__":
+    # usage
+    fp = Path(r"C:\Simulation_data\PROPACEOS\CH\CH.prp")
+    table = PropaceosTables(fp)
+    table.load_all()
+    print("density lims for targ:", min(table.ni), max(table.ni))
+    print("temperature lims for targ:", min(table.T), max(table.T))
+    fig, ax = table.plot("Eint", logz = False)
 
-# usage
-fp = Path(r"C:\Simulation_data\PROPACEOS\gas_6_EnergyBins\gas_6_EnergyBins.prp")
-table = PropaceosTables(fp)
-table.load_all()
-fig, ax = table.plot("rosseland_int", logz = False)
 
+    lineout_tool = InteractiveLineout(
+        ax=ax,
+        x=table.T,
+        y=table.ni,
+        data=table.Eint,
+        width=0.1,
+        lineout_label="Eint",
+    )
 
-lineout_tool = InteractiveLineout(
-    ax=ax,
-    x=table.T,
-    y=table.ni,
-    data=table.rosseland_int,
-    width=0.1,
-    lineout_label="Internal Energy",
-)
+    plt.show()
 
-plt.show()
-
-#arr = table.Eint
-#plt.plot(arr[15,:], logy=True)
-#plt.show()
-# op = Path(r"C:\Simulation_data\PROPACEOS\gas_6_EnergyBins\gas_6_EnergyBins_stripped.prp")
-# table.strip_for_flash(op)
+    #arr = table.Eint
+    #plt.plot(arr[15,:], logy=True)
+    #plt.show()
+    # op = Path(r"C:\Simulation_data\PROPACEOS\gas_6_EnergyBins\gas_6_EnergyBins_stripped.prp")
+    # table.strip_for_flash(op)
